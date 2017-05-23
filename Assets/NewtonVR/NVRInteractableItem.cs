@@ -14,7 +14,8 @@ namespace NewtonVR
         private const float AngularVelocityMagic = 50f;
 
         [Tooltip("If you have a specific point you'd like the object held at, create a transform there and set it to this variable")]
-        public Transform InteractionPoint;
+        [HideInInspector] public Transform InteractionPoint;
+		public List<Transform> 	m_interactionPoints = new List<Transform>();
 
         public UnityEvent OnUseButtonDown;
         public UnityEvent OnUseButtonUp;
@@ -38,6 +39,33 @@ namespace NewtonVR
 
         protected Dictionary<Collider, PhysicMaterial> MaterialCache = new Dictionary<Collider, PhysicMaterial>();
 
+		// Properties for rotation in mobile VR while using swipe
+		protected NVRAttachPoint 	m_attachPoint;									// Halo attach point
+		protected InteractionType 	m_interactionType = InteractionType.kHands;		// Type indicates if objects is handled by hands or swipe
+		private Vector3 			m_lastTouchPosition = Vector3.zero;
+		private Vector3 			m_lastRotationAxis = Vector3.zero;
+		private float 				m_touchSpeed = 0.0f;
+		private TouchState 			m_touchState = TouchState.kNoTouch;
+		private float 				m_timer = 0.0f;
+
+		[Header("HaloScale")]
+		public float 				m_haloObjectScale = 1.5f;
+		public float 				m_afterHaloObjectScale = 1.0f;
+
+
+		protected enum InteractionType
+		{
+			kHands,				// using hands for interactions, used in vive and oculus
+			kSwipe				// using touchpad for interaction, used in daydream and gear
+		}
+
+		protected enum TouchState
+		{
+			kMovingTouch,		// Touchpad is touched and objects rotates
+			kEndTouch,			// Touchpad just released and object keeps rotating for a while
+			kNoTouch			// No touchpad touch
+		}
+
         protected override void Awake()
         {
             base.Awake();
@@ -48,7 +76,11 @@ namespace NewtonVR
         protected override void Start()
         {
             base.Start();
-
+	#if UNITY_ANDROID
+		// Initialise state and properties for mobile VR
+		m_attachPoint = GetComponent<NVRAttachPoint>();
+		m_interactionType = (NVRPlayer.Instance.MobileInteractionStyle == InterationStyle.ByScript) ? InteractionType.kSwipe : InteractionType.kHands;
+	#endif
             if (NVRPlayer.Instance.VelocityHistorySteps > 0)
             {
                 VelocityHistory = new Vector3?[NVRPlayer.Instance.VelocityHistorySteps];
@@ -70,6 +102,11 @@ namespace NewtonVR
 
             AddExternalVelocities();
         }
+	protected override void Update()
+	{
+		base.Update();
+		MobileTouchpadRotation();
+	}
 
         protected virtual void GetTargetValues(out Vector3 targetHandPosition, out Quaternion targetHandRotation, out Vector3 targetItemPosition, out Quaternion targetItemRotation)
         {
@@ -165,16 +202,44 @@ namespace NewtonVR
             float angle;
             Vector3 axis;
 
-            positionDelta = (targetHandPosition - targetItemPosition);
-            rotationDelta = targetHandRotation * Quaternion.Inverse(targetItemRotation);
+            //if (InteractionPoint != null || PickupTransform == null) //PickupTransform should only be null
+			//{
+			//    rotationDelta = AttachedHand.transform.rotation * Quaternion.Inverse(InteractionPoint.rotation);
+			//    positionDelta = (AttachedHand.transform.position - InteractionPoint.position);
+			//}
+			// AT modification: remove one interaction point and add a list of possible ones
+			if (m_interactionPoints.Count > 0 || targetHandPosition == null) //PickupTransform should only be null
+			{
+				Vector3 handPosition = AttachedHand.transform.position;
+				float minDistance = 100.0f;
+				int minIndex = 0;
 
+				// Find which interaction point is closest to the hand
+				for(int i = 0; i < m_interactionPoints.Count; ++i)
+				{
+					float distance = (handPosition - m_interactionPoints[i].transform.position).magnitude;
 
-            Vector3 velocityTarget = (positionDelta * velocityMagic) * Time.deltaTime;
+					if(distance < minDistance)
+					{
+						minDistance = distance;
+						minIndex = i;
+					}
+				}
+
+				rotationDelta = AttachedHand.transform.rotation * Quaternion.Inverse(m_interactionPoints[minIndex].rotation);
+				positionDelta = (AttachedHand.transform.position - m_interactionPoints[minIndex].position);
+			}
+            else
+            {
+                rotationDelta = targetHandRotation * Quaternion.Inverse(this.transform.rotation);
+                positionDelta = (targetHandPosition - this.transform.position);
+            }
+
+    		Vector3 velocityTarget = (positionDelta * velocityMagic) * Time.deltaTime;
             if (float.IsNaN(velocityTarget.x) == false)
             {
                 this.Rigidbody.velocity = Vector3.MoveTowards(this.Rigidbody.velocity, velocityTarget, MaxVelocityChange);
             }
-
 
             rotationDelta.ToAngleAxis(out angle, out axis);
 
@@ -404,6 +469,10 @@ namespace NewtonVR
 
         protected void DisablePhysicalMaterials()
         {
+		if(Colliders == null)
+		{
+			return;
+		}			
             for (int colliderIndex = 0; colliderIndex < Colliders.Length; colliderIndex++)
             {
                 if (Colliders[colliderIndex] == null)
@@ -418,6 +487,10 @@ namespace NewtonVR
 
         protected void EnablePhysicalMaterials()
         {
+		if(Colliders == null)
+		{
+			return;
+		}
             for (int colliderIndex = 0; colliderIndex < Colliders.Length; colliderIndex++)
             {
                 if (Colliders[colliderIndex] == null)
@@ -449,5 +522,142 @@ namespace NewtonVR
                 }
             }
         }
+
+
+		/// <summary>
+		/// Functions related to mobile VR in order to rotate the object depending on the player touchpad input
+		/// </summary>
+
+		// This is used when we rotate the object by swiping the touch pad on mobile VR
+		private void MobileTouchpadRotation()
+		{
+			if (!IsRotationApplied())
+			{
+				return;
+			}
+
+			UpdateRotationState();
+			ApplyRotation();
+		}
+
+		private bool IsRotationApplied()
+		{
+			bool isSwipe = (m_interactionType == InteractionType.kSwipe);
+
+			if ((!isSwipe) || (!NVRPlayer.Instance.LeftHand) ||
+				(isSwipe && (m_attachPoint == null || (m_attachPoint && !m_attachPoint.IsAttached))))
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		private void UpdateRotationState()
+		{
+			// Change touch state depending on finger position 
+			switch(m_touchState)
+			{
+			case TouchState.kMovingTouch:
+				if (!NVRPlayer.Instance.LeftHand.UseTouchPad)
+				{
+					m_touchState = TouchState.kEndTouch;
+					//Debug.Log ("End touch rotation " + m_lastRotationAxis + " with v " + m_touchSpeed);
+					//HTW.DriHTWConsoleLog.WriteLog("End touch rotation " + m_lastRotationAxis + " with v " + m_touchSpeed + "\n");
+
+					return;
+				}
+				break;
+			case TouchState.kEndTouch:
+				if(m_touchSpeed <= 0.1f)
+				{
+					m_touchState = TouchState.kNoTouch;
+					return;
+				}
+				break;
+			case TouchState.kNoTouch:
+				#if NVR_Daydream
+				if (NVRPlayer.Instance.LeftHand.UseTouchPad)
+				{
+					m_touchState = TouchState.kMovingTouch;
+					m_lastTouchPosition = NVRPlayer.Instance.LeftHand.TouchPadPosition;
+				}
+				#elif NVR_Gear
+				if (NVRPlayer.Instance.LeftHand.UseTouchPad)
+				{
+					if(m_timer > 0.05f)
+					{
+						//HTW.DriHTWConsoleLog.WriteLog("Start new rotation!\n");
+						m_touchState = TouchState.kMovingTouch;
+						m_lastTouchPosition = NVRPlayer.Instance.LeftHand.TouchPadPosition;
+						m_timer = 0.0f;
+					}
+
+					m_timer += Time.deltaTime;
+				}
+				#endif
+				break;
+			}
+		}
+
+		private void ApplyRotation()
+		{
+			// Rotate the object
+			switch (m_touchState)
+			{
+			case TouchState.kMovingTouch:
+				#if NVR_Daydream
+				Vector2 touchPosition = NVRPlayer.Instance.LeftHand.TouchPadPosition;
+				Vector3 currentTouch = new Vector3 (touchPosition.x, touchPosition.y, 0.0f);
+
+				currentTouch -= m_lastTouchPosition;
+				currentTouch = currentTouch.normalized;
+
+				Vector3 axisRotation = new Vector3 (-currentTouch.y, -currentTouch.x, 0.0f);
+				axisRotation = axisRotation.normalized;
+
+				bool isFingerStatic = Mathf.Approximately (axisRotation.x, 0.0f) || Mathf.Approximately (axisRotation.y, 0.0f);
+
+				// Rotate around world axis and not local only if the finger isnt static in the same position as previously
+				if (!isFingerStatic) 
+				{
+				m_touchSpeed = 0.5f * (new Vector3 (touchPosition.x, touchPosition.y, 0.0f) - m_lastTouchPosition).magnitude / Time.deltaTime;
+
+				m_lastRotationAxis = axisRotation;
+				transform.Rotate (axisRotation * NVRPlayer.Instance.MobileRotateSpeed * m_touchSpeed  * Time.deltaTime, Space.World);
+				//Debug.Log ("Direction of movement " + currentTouch + " with v " + m_touchSpeed.ToString("F4") + " touch pos " + touchPosition.ToString("F4") + " last touch pos " + m_lastTouchPosition.ToString("F4"));
+				} 
+
+				m_lastTouchPosition = touchPosition;
+				#elif NVR_Gear
+				float positionX = NVRPlayer.Instance.LeftHand.TouchPadPosition.x;
+				positionX = Mathf.Clamp (positionX, -1.0f, 1.0f);
+				float positionY = NVRPlayer.Instance.LeftHand.TouchPadPosition.y;
+				positionY = Mathf.Clamp (positionY, -1.0f, 1.0f);
+				//Debug.Log ("Mouse x " + positionX + " mouse Y " + positionY);
+
+				float newX = Mathf.Approximately (positionX, 0.0f) ? 0.0f : positionX;
+				float newY = Mathf.Approximately (positionY, 0.0f) ? 0.0f : positionY;
+
+				Vector3 axisRotation = new Vector3 (newY, newX, 0.0f);
+				axisRotation = axisRotation.normalized;
+
+				m_touchSpeed = 0.5f * (new Vector3 (newY, newX, 0.0f)).magnitude / Time.deltaTime;
+
+				m_lastRotationAxis = axisRotation;
+				transform.Rotate (axisRotation * NVRPlayer.Instance.MobileRotateSpeed * m_touchSpeed * Time.deltaTime, Space.World);
+
+				//HTW.DriHTWConsoleLog.WriteLog("Mouse x " + positionX + " mouse Y " + positionY + " axis of rotation " + axisRotation + " rotate by " + axisRotation * NVRPlayer.Instance.MobileRotateSpeed * m_touchSpeed * Time.deltaTime + "\n");
+				#endif
+				break;
+				// Touch has finished so slow down rotation with friction
+			case TouchState.kEndTouch:
+				m_touchSpeed *= NVRPlayer.Instance.MobileFriction;
+				transform.Rotate (m_lastRotationAxis * NVRPlayer.Instance.MobileRotateSpeed * m_touchSpeed  * Time.deltaTime, Space.World);
+				//Debug.Log("Rotate at End Touch rotation with v " + m_touchSpeed);
+				//HTW.DriHTWConsoleLog.WriteLog("Rotate at End Touch rotation with v " + m_touchSpeed + "\n");
+				break;
+			}
+		}
     }
 }

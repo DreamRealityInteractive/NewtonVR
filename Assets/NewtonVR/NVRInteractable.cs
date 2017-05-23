@@ -106,7 +106,8 @@ namespace NewtonVR
 
             return false;
         }
-        
+
+        //Remove items that go too high or too low.
         protected virtual void Update()
         {
         }

@@ -29,6 +29,8 @@ namespace NewtonVR
     {
         private const string SteamVRDefine = "NVR_SteamVR";
         private const string OculusDefine = "NVR_Oculus";
+		private const string DaydreamDefine = "NVR_Daydream";
+		private const string GearDefine = "NVR_Gear";
 
         private static bool hasReloaded = false;
         private static bool waitingForReload = false;
@@ -36,8 +38,11 @@ namespace NewtonVR
 
         private static bool hasOculusSDK = false;
         private static bool hasSteamVR = false;
+		private static bool hasDaydreamSDK = false;
         private static bool hasOculusSDKDefine = false;
         private static bool hasSteamVRDefine = false;
+		private static bool hasDaydreamVRDefine = false;
+		private static bool hasGearVRDefine = false;
 
         private static string progressBarMessage = null;
 
@@ -52,10 +57,13 @@ namespace NewtonVR
 
             hasSteamVR = DoesTypeExist("SteamVR");
 
+			hasDaydreamSDK = DoesTypeExist("GvrController");
+
             string scriptingDefine = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone);
             string[] scriptingDefines = scriptingDefine.Split(';');
             hasOculusSDKDefine = scriptingDefines.Contains(OculusDefine);
-            hasSteamVRDefine = scriptingDefines.Contains(SteamVRDefine);
+			hasDaydreamVRDefine = scriptingDefines.Contains(DaydreamDefine);
+			hasGearVRDefine = scriptingDefine.Contains(GearDefine);
 
             waitingForReload = false;
             ClearProgressBar();
@@ -179,13 +187,16 @@ namespace NewtonVR
             if (waitingForReload)
                 HasWaitedLongEnough();
 
-            player.OculusSDKEnabled = hasOculusSDKDefine;
+			player.OculusSDKEnabled = hasOculusSDKDefine || hasGearVRDefine;
             player.SteamVREnabled = hasSteamVRDefine;
+			player.DaydreamSDKEnabled = hasDaydreamVRDefine;
 
             bool installSteamVR = false;
             bool installOculusSDK = false;
+			bool installDaydreamSDK = false;
             bool enableSteamVR = player.SteamVREnabled;
             bool enableOculusSDK = player.OculusSDKEnabled;
+			bool enableDaydreamSDK = player.DaydreamSDKEnabled;
             
             EditorGUILayout.BeginHorizontal();
             if (hasSteamVR == false)
@@ -216,6 +227,21 @@ namespace NewtonVR
                 enableOculusSDK = EditorGUILayout.Toggle("Enable Oculus SDK", player.OculusSDKEnabled);
             }
             EditorGUILayout.EndHorizontal();
+
+			EditorGUILayout.BeginHorizontal();
+			if (hasDaydreamSDK == false)
+			{
+				using (new EditorGUI.DisabledScope(hasDaydreamSDK == false))
+				{
+					EditorGUILayout.Toggle("Enable Daydream SDK", player.DaydreamSDKEnabled);
+				}
+				installDaydreamSDK = GUILayout.Button("Install Daydream SDK");
+			}
+			else
+			{
+				enableDaydreamSDK = EditorGUILayout.Toggle("Enable Daydream SDK", player.DaydreamSDKEnabled);
+			}
+			EditorGUILayout.EndHorizontal();
 
 
             GUILayout.Space(10);
@@ -345,6 +371,15 @@ namespace NewtonVR
                 AddDefine(OculusDefine);
             }
 
+			if (enableDaydreamSDK == false && player.DaydreamSDKEnabled == true)
+			{
+				RemoveDefine(DaydreamDefine);
+			}
+			else if (enableDaydreamSDK == true && player.DaydreamSDKEnabled == false)
+			{
+				AddDefine(DaydreamDefine);
+			}
+
             if (installOculusSDK == true)
             {
                 Application.OpenURL("https://developer.oculus.com/downloads/package/oculus-utilities-for-unity-5/");
@@ -354,6 +389,11 @@ namespace NewtonVR
             {
                 Application.OpenURL("com.unity3d.kharma:content/32647");
             }
+
+			if(installDaydreamSDK == true)
+			{
+				Application.OpenURL("https://developers.google.com/vr/unity/download");
+			}
 
             DrawDefaultInspector();
 

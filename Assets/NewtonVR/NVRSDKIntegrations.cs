@@ -11,5 +11,7 @@ namespace NewtonVR
         FallbackNonVR,
         SteamVR,
         Oculus,
+		Daydream,
+		Gear
     }
 }

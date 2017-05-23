@@ -9,6 +9,53 @@ namespace NewtonVR
 {
     public class NVRPlayer : MonoBehaviour
     {
+[Header("OculusInteractions")]
+	public float 			m_haloObjectScaleDuration = 0.5f;
+	public bool 			m_isHaloScaleActive = false;
+	public HaloScaleState 	m_haloScaleState = HaloScaleState.kObjectStaysScaled;
+
+	public enum HaloScaleState
+	{
+		kObjectStaysScaled,
+		kObjectScaleUpDown
+	}
+
+	[Header("MobileInteractions")]
+	public float m_daydreamRotateSpeed = 150.0f;
+	public float m_daydreamFriction = 0.85f;
+	public float m_gearRotateSpeed = 5.0f;
+	public float m_gearFriction = 0.35f;
+
+	public float MobileRotateSpeed
+	{
+		get
+		{
+			if (CurrentIntegrationType == NVRSDKIntegrations.Daydream)
+			{
+				return m_daydreamRotateSpeed;
+			}
+			else
+			{
+				return m_gearRotateSpeed;
+			}
+		}
+	}
+
+	public float MobileFriction
+	{
+		get
+		{
+			if (CurrentIntegrationType == NVRSDKIntegrations.Daydream)
+			{
+				return m_daydreamFriction;
+			}
+			else
+			{
+				return m_gearFriction;
+			}
+		}
+	}
+
         public const decimal NewtonVRVersion = 1.22m;
         public const float NewtonVRExpectedDeltaTime = 0.0111f;
 
@@ -25,8 +72,11 @@ namespace NewtonVR
         public bool SteamVREnabled = false;
         [HideInInspector]
         public bool OculusSDKEnabled = false;
+		[HideInInspector]
+		public bool DaydreamSDKEnabled = false;
 
         public InterationStyle InteractionStyle;
+		public InterationStyle MobileInteractionStyle = InterationStyle.ByScript;
         public bool PhysicalHands = true;
         public bool MakeControllerInvisibleOnInteraction = false;
         public bool AutomaticallySetControllerTransparency = true;
@@ -206,10 +256,18 @@ namespace NewtonVR
             {
                 Integration = new NVROculusIntegration();
             }
+			else if (CurrentIntegrationType == NVRSDKIntegrations.Gear)
+			{
+				Integration = new NVRGearIntegration();
+			}
             else if (CurrentIntegrationType == NVRSDKIntegrations.SteamVR)
             {
                 Integration = new NVRSteamVRIntegration();
             }
+			else if (CurrentIntegrationType == NVRSDKIntegrations.Daydream)
+			{
+				Integration = new NVRDaydreamIntegration();
+			}
             else if (CurrentIntegrationType == NVRSDKIntegrations.FallbackNonVR)
             {
                 if (logOutput == true)
@@ -237,8 +295,8 @@ namespace NewtonVR
             {
                 resultLog += "Found VRDevice: " + VRDevice.model + ". ";
 
-#if !NVR_Oculus && !NVR_SteamVR
-                string warning = "Neither SteamVR or Oculus SDK is enabled in the NVRPlayer. Please check the \"Enable SteamVR\" or \"Enable Oculus SDK\" checkbox in the NVRPlayer script in the NVRPlayer GameObject.";
+#if !NVR_Oculus && !NVR_SteamVR && !NVR_Gear && !NVR_Daydream
+                string warning = "Neither SteamVR or Oculus SDK or Daydream SDK is enabled in the NVRPlayer. Please check the \"Enable SteamVR\" or \"Enable Oculus SDK\" checkbox in the NVRPlayer script in the NVRPlayer GameObject.";
                 Debug.LogWarning(warning);
 #endif
 
@@ -250,12 +308,28 @@ namespace NewtonVR
                 }
 #endif
 
+#if NVR_Gear
+		if (currentIntegration == NVRSDKIntegrations.None)
+		{ 
+			currentIntegration = NVRSDKIntegrations.Gear;
+			resultLog += "Using Gear/Oculus SDK";
+		}
+#endif
+
 #if NVR_SteamVR
                 if (currentIntegration == NVRSDKIntegrations.None)
                 { 
                     currentIntegration = NVRSDKIntegrations.SteamVR;
                     resultLog += "Using SteamVR SDK";
                 }
+#endif
+
+#if NVR_Daydream 
+		if (currentIntegration == NVRSDKIntegrations.None)
+		{ 
+			currentIntegration = NVRSDKIntegrations.Daydream;
+			resultLog += "Using DaydreamVR SDK";
+		}
 #endif
             }
 

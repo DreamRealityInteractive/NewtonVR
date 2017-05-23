@@ -21,6 +21,10 @@ namespace NewtonVR
         public bool UseButtonPressed { get { return Inputs[UseButton].IsPressed; } }
         public float UseButtonAxis { get { return Inputs[UseButton].SingleAxis; } }
 
+		public NVRButtons TouchPadButton = NVRButtons.Touchpad;
+		public Vector2 TouchPadPosition { get { return Inputs[TouchPadButton].Axis; } }
+		public bool UseTouchPad { get { return Inputs[TouchPadButton].IsTouched; } }
+
         [HideInInspector]
         public bool IsRight;
         [HideInInspector]
@@ -184,6 +188,10 @@ namespace NewtonVR
                     }
                 }
             }
+			else if (Player.CurrentIntegrationType == NVRSDKIntegrations.Gear)
+			{
+				InputDevice = this.gameObject.AddComponent<NVRGearInputDevice>();
+			}
             else if (Player.CurrentIntegrationType == NVRSDKIntegrations.SteamVR)
             {
                 InputDevice = this.gameObject.AddComponent<NVRSteamVRInputDevice>();
@@ -206,6 +214,10 @@ namespace NewtonVR
                     }
                 }
             }
+			else if (Player.CurrentIntegrationType == NVRSDKIntegrations.Daydream)
+			{
+				InputDevice = this.gameObject.AddComponent<NVRDaydreamInputDevice>();
+			}
             else
             {
                 //Debug.LogError("[NewtonVR] Critical Error: NVRPlayer.CurrentIntegration not setup.");
@@ -546,6 +558,8 @@ namespace NewtonVR
         {
             if (interactable.CanAttach == true)
             {
+		Debug.Log ("Begin Interaction " + interactable.name + " hand " + this.name);
+																
                 if (interactable.AttachedHand != null)
                 {
                     if (interactable.AllowTwoHanded == false)
@@ -556,6 +570,11 @@ namespace NewtonVR
 
                 CurrentlyInteracting = interactable;
                 CurrentlyInteracting.BeginInteraction(this);
+
+		if (PhysicalController && PhysicalController.hasCustomPhysicalHandController())
+                {
+                    PhysicalController.On();        // enable animation with Phyiscal Hand component during interaction
+                }
 
                 if (OnBeginInteraction != null)
                 {
@@ -571,6 +590,8 @@ namespace NewtonVR
 
             if (CurrentlyInteracting != null)
             {
+		Debug.Log ("End Interaction " + this.gameObject.name + " item " + CurrentlyInteracting.name);
+                									  
                 CurrentlyInteracting.EndInteraction(this);
 
                 if (OnEndInteraction != null)
@@ -578,6 +599,10 @@ namespace NewtonVR
                     OnEndInteraction.Invoke(CurrentlyInteracting);
                 }
 
+		if (PhysicalController && PhysicalController.hasCustomPhysicalHandController())
+                {
+                    PhysicalController.Off();       // disable Phyiscal Hand component after interaction
+                }
                 CurrentlyInteracting = null;
             }
 
@@ -702,6 +727,11 @@ namespace NewtonVR
                         for (int index = 0; index < GhostRenderers.Length; index++)
                         {
                             GhostRenderers[index].enabled = false;
+                        }
+
+                        for (int index = 0; index < GhostColliders.Length; index++)
+                        {
+                            GhostColliders[index].enabled = false;
                         }
                     }
                 }
