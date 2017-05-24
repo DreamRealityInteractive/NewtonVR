@@ -28,6 +28,11 @@ namespace NewtonVR
 
                 return AttachedHands[0];
             }
+            // TMP: Auto set to the first hand
+            set 
+            {
+                AttachedHands[0] = value;
+            }
         }
 
         protected Collider[] Colliders = new Collider[0];
