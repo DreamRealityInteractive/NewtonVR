@@ -61,6 +61,7 @@ namespace NewtonVR
             manager.trackingOriginType = OVRManager.TrackingOrigin.FloorLevel;
 
             OVRCameraRig rig = Player.gameObject.AddComponent<OVRCameraRig>();
+            rig.usePerEyeCameras = true;
 
             NVRHelpers.SetProperty(rig, "trackingSpace", Player.transform, true);
             NVRHelpers.SetProperty(rig, "leftHandAnchor", Player.LeftHand.transform, true);
