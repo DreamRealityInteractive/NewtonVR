@@ -40,7 +40,32 @@ namespace NewtonVR
             Player.Head.gameObject.AddComponent<SteamVR_Ears>();
             NVRHelpers.SetField(steamVrCamera, "_head", Player.Head.transform, false);
             NVRHelpers.SetField(steamVrCamera, "_ears", Player.Head.transform, false);
+            
+            //// Start Integration for Holo with NVR //////
 
+            // Integration for two camera setup needed for Microsoft Holo video with NewtonVr
+            Player.Head.gameObject.name = "Head_Left";		// rename original NVR head to avoid confusion in editor
+
+            // Create game object and position it to match NVR existing camera
+            GameObject headRight = new GameObject ("Head_Right");
+            headRight.transform.position = Player.Head.gameObject.transform.position;
+            headRight.transform.rotation = Player.Head.transform.rotation;
+            headRight.transform.parent = Player.Head.transform.parent;
+
+            // Add camera to new game object and set for right VR eye
+            Camera camRight = headRight.AddComponent<Camera> ();
+            camRight.stereoTargetEye = StereoTargetEyeMask.Right;
+
+            // Add steam camera component
+            SteamVR_Camera steamVrCameraRight = headRight.gameObject.AddComponent<SteamVR_Camera>();
+
+            // If original NVR head has a camera component, set the camera for left VR eye
+            Camera camLeft = Player.Head.GetComponent<Camera> ();
+            if (camLeft) {
+	            camLeft.stereoTargetEye = StereoTargetEyeMask.Left;
+            }
+
+			//// End Integration for Holo with NVR //////
             Player.Head.gameObject.AddComponent<SteamVR_TrackedObject>();
 
             Player.gameObject.SetActive(true);
