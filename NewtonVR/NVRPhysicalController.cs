@@ -24,17 +24,17 @@ namespace NewtonVR
         protected float AttachedPositionMagic = 3000f;
 
         private Type[] KeepTypes = new Type[] {typeof(MeshFilter), typeof(Renderer), typeof(Transform), typeof(Rigidbody),
-            typeof(Animator), typeof(HandController)};
+            typeof(Animator), typeof(HTW.HTWHandController)};
 
         // Custom hand mesh and grabbing animation
-        private HandController HandPhysicsAnimController;
-        private HandController HandPhysicsColliderAnimController;
-        private HandController HandAnimController;
+        private HTW.HTWHandController HandPhysicsAnimController;
+        private HTW.HTWHandController HandPhysicsColliderAnimController;
+        private HTW.HTWHandController HandAnimController;
         private SkinnedMeshRenderer[] PhysicalControllerRenderers;
         private SkinnedMeshRenderer HandMeshRenderer;
         private Animator[] anims = {null, null, null};
         private GameObject CustomColliderRoot;
-        private ChildCollision[] CustomChildrenColliders = { null, null, null, null, null};
+        private HTW.HTWChildCollision[] CustomChildrenColliders = { null, null, null, null, null};
 
         public void Initialize(NVRHand trackingHand, bool initialState)
         {
@@ -59,8 +59,8 @@ namespace NewtonVR
             }
 
             // Get references from script to toggle animation states, visibility, and physics
-            HandPhysicsAnimController = PhysicalController.GetComponentInChildren<HandController>();
-            HandAnimController = Hand.GetComponentInChildren<HandController>();
+            HandPhysicsAnimController = PhysicalController.GetComponentInChildren<HTW.HTWHandController>();
+            HandAnimController = Hand.GetComponentInChildren<HTW.HTWHandController>();
             PhysicalControllerRenderers = PhysicalController.GetComponentsInChildren<SkinnedMeshRenderer>();
             HandMeshRenderer = Hand.GetComponentInChildren<SkinnedMeshRenderer>();
             anims[0] = PhysicalController.GetComponentInChildren<Animator>();
@@ -230,7 +230,7 @@ namespace NewtonVR
                 // Turn off hand physics collisions
                 toggleTriggerCollider(true);
                 // Set animation speed to 1 for each finger layer
-                foreach (ChildCollision col in CustomChildrenColliders)
+                foreach (HTW.HTWChildCollision col in CustomChildrenColliders)
                 {
                     col.unfreezeHand();
                 }
@@ -270,11 +270,11 @@ namespace NewtonVR
                 customCollidersTransform = customColliders.transform;
 
                 // Reference for animating the colliders as mesh bones animate
-                HandPhysicsColliderAnimController = customColliders.GetComponentInChildren<HandController>();
+                HandPhysicsColliderAnimController = customColliders.GetComponentInChildren<HTW.HTWHandController>();
                 anims[2] = customColliders.GetComponentInChildren<Animator>();      // assign 3rd of 3 animators associated with respective hand
                 // pass animators to all children so they only animate corresponding hand
-                CustomChildrenColliders = customColliders.GetComponentsInChildren<ChildCollision>();
-                foreach (ChildCollision col in CustomChildrenColliders)
+                CustomChildrenColliders = customColliders.GetComponentsInChildren<HTW.HTWChildCollision>();
+                foreach (HTW.HTWChildCollision col in CustomChildrenColliders)
                 {
                     col.setAnimators(anims);
                 }
