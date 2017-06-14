@@ -21,6 +21,11 @@ namespace NewtonVR
         [HideInInspector]
         public NVRInteractableItem Item;
 
+		[HideInInspector]
+		public NVRAttachJoint AttachedJoint;
+
+		public Collider ThisCollider; // Assign a ref if collider doesnt exist in the same game object
+
         public bool IsAttached;
 
         protected virtual void Awake()
@@ -33,7 +38,9 @@ namespace NewtonVR
                 Debug.LogError("No NVRInteractableItem found on this object. " + this.gameObject.name, this.gameObject);
             }
 
-            AttachPointMapper.Register(this.GetComponent<Collider>(), this);
+			// In case of collider not existing in the same entity, then allow user to assign one for this attach point
+			Collider thisCollider = (ThisCollider != null) ? ThisCollider: this.GetComponent<Collider>();
+			AttachPointMapper.Register(thisCollider, this);
 
 			InitialScale = transform.localScale;
         }
@@ -70,6 +77,8 @@ namespace NewtonVR
 
             IsAttached = true;
             Rigidbody.useGravity = false;
+
+			AttachedJoint = joint;
         }
         public virtual void Detached(NVRAttachJoint joint)
         {
@@ -79,6 +88,8 @@ namespace NewtonVR
             {
                 Rigidbody.useGravity = true;
             }
+
+			AttachedJoint = null;
         }
 
         public virtual void PullTowards(NVRAttachJoint joint)
