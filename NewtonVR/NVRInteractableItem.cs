@@ -188,13 +188,8 @@ namespace NewtonVR
             float angle;
             Vector3 axis;
 
-            //if (InteractionPoint != null || PickupTransform == null) //PickupTransform should only be null
-			//{
-			//    rotationDelta = AttachedHand.transform.rotation * Quaternion.Inverse(InteractionPoint.rotation);
-			//    positionDelta = (AttachedHand.transform.position - InteractionPoint.position);
-			//}
 			// AT modification: remove one interaction point and add a list of possible ones
-			if (m_interactionPoints.Count > 0 || targetHandPosition == null) //PickupTransform should only be null
+			if (m_interactionPoints.Count > 0) 
 			{
 				Vector3 handPosition = AttachedHand.transform.position;
 				float minDistance = 100.0f;
@@ -211,9 +206,9 @@ namespace NewtonVR
 						minIndex = i;
 					}
 				}
-
-				rotationDelta = AttachedHand.transform.rotation * Quaternion.Inverse(m_interactionPoints[minIndex].rotation);
-				positionDelta = (AttachedHand.transform.position - m_interactionPoints[minIndex].position);
+					
+				rotationDelta = targetHandRotation * Quaternion.Inverse(m_interactionPoints[minIndex].rotation);
+				positionDelta = (targetHandPosition - m_interactionPoints[minIndex].position);
 			}
             else
             {
