@@ -57,7 +57,8 @@ namespace NewtonVR
             camRight.stereoTargetEye = StereoTargetEyeMask.Right;
 
             // Add steam camera component
-            SteamVR_Camera steamVrCameraRight = headRight.gameObject.AddComponent<SteamVR_Camera>();
+            //SteamVR_Camera steamVrCameraRight = headRight.gameObject.AddComponent<SteamVR_Camera>();
+			headRight.gameObject.AddComponent<SteamVR_Camera>();
 
             // If original NVR head has a camera component, set the camera for left VR eye
             Camera camLeft = Player.Head.GetComponent<Camera> ();
