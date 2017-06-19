@@ -113,7 +113,7 @@ namespace NewtonVR
 
             // Create game object and position it to match NVR existing camera
             GameObject headRight = new GameObject("Head_Right");
-            headRight.gameObject.tag = "MainCamera";
+          //  headRight.gameObject.tag = "MainCamera";
             headRight.transform.position = Player.Head.gameObject.transform.position;
             headRight.transform.rotation = Player.Head.transform.rotation;
             headRight.transform.parent = Player.Head.transform.parent;
@@ -125,7 +125,8 @@ namespace NewtonVR
             camRight.cullingMask &= ~(1 << LayerMask.NameToLayer("LeftEye"));
             camRight.farClipPlane = 200f;
             camRight.nearClipPlane = 0.01f;
-            camRight.allowHDR = false;
+            camRight.allowHDR = true;
+            camRight.depth = -1;
 
             // If original NVR head has a camera component, set the camera for left VR eye
             Camera camLeft = Player.Head.GetComponent<Camera>();
@@ -138,6 +139,7 @@ namespace NewtonVR
                 camLeft.cullingMask &= ~(1 << LayerMask.NameToLayer("RightEye"));
                 camLeft.farClipPlane = 200f;
                 camLeft.nearClipPlane = 0.01f;
+                camLeft.allowHDR = true;
             }
 
             // Copy over image effect components from the main camera tagged with "ArtSetupCamera"
@@ -169,16 +171,6 @@ namespace NewtonVR
 
                     // Set active status of right eye component from status of head
                     ((Behaviour)headRight.GetComponent(type)).enabled = isActive;
-
-                    if (type == typeof(VideoPlayTest))
-                    {
-                        VideoPlayTest vpt = Player.Head.GetComponent<VideoPlayTest>();
-                        UnityEngine.Video.VideoPlayer vpTop = vpt.LeftEye;
-                        UnityEngine.Video.VideoPlayer vpBot = vpt.RightEye;
-
-                        ((VideoPlayTest)headRight.GetComponent(type)).LeftEye = vpBot;// GameObject.FindGameObjectWithTag("rightPlane").GetComponent<UnityEngine.Video.VideoPlayer>();
-                        ((VideoPlayTest)headRight.GetComponent(type)).RightEye = vpTop;
-                    }
                 }
             }
 
