@@ -21,9 +21,6 @@ namespace NewtonVR
 
 		protected ScaleState	m_currentScaleState = ScaleState.kIdle;
 		protected Vector3		m_objectInitialScale = Vector3.zero;
-		protected float 		m_objectHaloScale = 0.0f;
-		protected float 		m_objectAfterHaloScale = 0.0f;
-		protected Transform		m_attachedTransform;
 
 		protected enum ScaleState
 		{
@@ -58,10 +55,11 @@ namespace NewtonVR
             {
                 FixedUpdateAttached();
             }
-			else if(!IsAttached && NVRPlayer.Instance.m_haloScaleState == NVRPlayer.HaloScaleState.kObjectScaleUpDown && NVRPlayer.Instance.m_isHaloScaleActive && m_currentScaleState == ScaleState.kScale)
+			else if(AttachedItem && !IsAttached && NVRPlayer.Instance.m_haloScaleState == NVRPlayer.HaloScaleState.kObjectScaleUpDown && NVRPlayer.Instance.m_isHaloScaleActive && 
+				m_currentScaleState == ScaleState.kScale)
 			{
 				// Scale down the object
-				ScaleAttachedObject(m_attachedTransform.localScale, m_objectInitialScale * m_objectAfterHaloScale);
+				ScaleAttachedObject(AttachedItem.transform.localScale, m_objectInitialScale * AttachedItem.m_afterHaloObjectScale);
 			}
         }
 
@@ -78,9 +76,9 @@ namespace NewtonVR
                 AttachedPoint.PullTowards(this);
 
 				// Scale Up the object
-				if(NVRPlayer.Instance.m_isHaloScaleActive && m_currentScaleState == ScaleState.kScale)
+				if(AttachedItem && NVRPlayer.Instance.m_isHaloScaleActive && m_currentScaleState == ScaleState.kScale)
 				{
-					ScaleAttachedObject(AttachedPoint.transform.localScale, m_objectInitialScale * m_objectHaloScale);
+					ScaleAttachedObject(AttachedItem.transform.localScale, m_objectInitialScale * AttachedItem.m_haloObjectScale);
 				}
             }
         }
@@ -95,12 +93,7 @@ namespace NewtonVR
 			if(IsHalo)
 			{
 				m_currentScaleState = ScaleState.kScale;
-				m_attachedTransform = point.gameObject.transform;
-				m_objectInitialScale = point.InitialScale;
-
-				NVRInteractableItem script = point.gameObject.GetComponent<NVRInteractableItem>();
-				m_objectHaloScale = (script) ? script.m_haloObjectScale : 1.0f;
-				m_objectAfterHaloScale = (script) ? script.m_afterHaloObjectScale : 1.0f;
+				m_objectInitialScale = AttachedPoint.InitialScale;
 			}
         }
 
@@ -119,7 +112,11 @@ namespace NewtonVR
 		private void ScaleAttachedObject(Vector3 startScale, Vector3 endScale)
 		{
 			Vector3 currentScale = Vector3.Lerp (startScale, endScale, Time.deltaTime / NVRPlayer.Instance.m_haloObjectScaleDuration);
-			m_attachedTransform.transform.localScale = currentScale;
+
+			if(AttachedItem)
+			{
+				AttachedItem.transform.localScale = currentScale;
+			}
 
 			if(Mathf.Approximately (currentScale.x, endScale.x))
 			{
