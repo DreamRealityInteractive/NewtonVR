@@ -216,6 +216,8 @@ namespace NewtonVR
             RenderModel.transform.localRotation = Quaternion.identity;
             RenderModel.transform.localScale = Vector3.one;
 
+            RenderModel.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+
             return RenderModel;
         }
 
