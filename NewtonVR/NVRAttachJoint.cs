@@ -11,6 +11,7 @@ namespace NewtonVR
         public NVRAttachPoint AttachedPoint;
 
         public bool IsAttached { get { return AttachedItem != null; } }
+        public bool CanAttach = true;
 
         public float PullRange = 0.2f;
         public float AttachRange = 0.01f;
@@ -30,7 +31,7 @@ namespace NewtonVR
 
         protected virtual void OnTriggerStay(Collider col)
         {
-            if (IsAttached == false)
+            if (IsAttached == false && CanAttach == true)
             {
                 NVRAttachPoint point = AttachPointMapper.GetAttachPoint(col);
                 if (point != null && point.IsAttached == false)
