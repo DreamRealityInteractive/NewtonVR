@@ -11,7 +11,7 @@ namespace NewtonVR
         public NVRAttachPoint AttachedPoint;
 
         public bool IsAttached { get { return AttachedItem != null; } }
-        public bool CanAttach = true;
+        private bool CanAttach = true;
 
         public float PullRange = 0.2f;
         public float AttachRange = 0.01f;
@@ -28,6 +28,11 @@ namespace NewtonVR
 			kIdle,
 			kScale
 		}
+
+        public bool JointCanAttach {
+            get { return CanAttach; }
+            set { CanAttach = value; }
+        }
 
         protected virtual void OnTriggerStay(Collider col)
         {
