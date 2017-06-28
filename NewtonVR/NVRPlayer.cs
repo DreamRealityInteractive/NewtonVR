@@ -9,16 +9,6 @@ namespace NewtonVR
 {
     public class NVRPlayer : MonoBehaviour
     {
-[Header("OculusInteractions")]
-	public float 			m_haloObjectScaleDuration = 0.5f;
-	public bool 			m_isHaloScaleActive = false;
-	public HaloScaleState 	m_haloScaleState = HaloScaleState.kObjectStaysScaled;
-
-	public enum HaloScaleState
-	{
-		kObjectStaysScaled,
-		kObjectScaleUpDown
-	}
 
 	[Header("MobileInteractions")]
 	public float m_daydreamRotateSpeed = 150.0f;
