@@ -39,24 +39,6 @@ namespace NewtonVR
 
         protected Dictionary<Collider, PhysicMaterial> MaterialCache = new Dictionary<Collider, PhysicMaterial>();
 
-		[Header("HaloScale")]
-		public float 				m_haloObjectScale = 1.5f;
-		public float 				m_afterHaloObjectScale = 1.0f;
-
-
-		protected enum InteractionType
-		{
-			kHands,				// using hands for interactions, used in vive and oculus
-			kSwipe				// using touchpad for interaction, used in daydream and gear
-		}
-
-		protected enum TouchState
-		{
-			kMovingTouch,		// Touchpad is touched and objects rotates
-			kEndTouch,			// Touchpad just released and object keeps rotating for a while
-			kNoTouch			// No touchpad touch
-		}
-
         protected override void Awake()
         {
             base.Awake();
