@@ -18,16 +18,6 @@ namespace NewtonVR
         public float DropDistance = 0.1f;
 
         public bool MatchRotation = true;
-		public bool IsHalo = false;
-
-		protected ScaleState	m_currentScaleState = ScaleState.kIdle;
-		protected Vector3		m_objectInitialScale = Vector3.zero;
-
-		protected enum ScaleState
-		{
-			kIdle,
-			kScale
-		}
 
         public bool JointCanAttach {
             get { return CanAttach; }
@@ -61,12 +51,6 @@ namespace NewtonVR
             {
                 FixedUpdateAttached();
             }
-			else if(AttachedItem && !IsAttached && NVRPlayer.Instance.m_haloScaleState == NVRPlayer.HaloScaleState.kObjectScaleUpDown && NVRPlayer.Instance.m_isHaloScaleActive && 
-				m_currentScaleState == ScaleState.kScale)
-			{
-				// Scale down the object
-				ScaleAttachedObject(AttachedItem.transform.localScale, m_objectInitialScale * AttachedItem.m_afterHaloObjectScale);
-			}
         }
 
         protected virtual void FixedUpdateAttached()
@@ -80,12 +64,6 @@ namespace NewtonVR
             else
             {
                 AttachedPoint.PullTowards(this);
-
-				// Scale Up the object
-				if(AttachedItem && NVRPlayer.Instance.m_isHaloScaleActive && m_currentScaleState == ScaleState.kScale)
-				{
-					ScaleAttachedObject(AttachedItem.transform.localScale, m_objectInitialScale * AttachedItem.m_haloObjectScale);
-				}
             }
         }
 
@@ -95,12 +73,6 @@ namespace NewtonVR
 
             AttachedItem = point.Item;
             AttachedPoint = point;
-
-			if(IsHalo)
-			{
-				m_currentScaleState = ScaleState.kScale;
-				m_objectInitialScale = AttachedPoint.InitialScale;
-			}
         }
 
         protected virtual void Detach()
@@ -108,26 +80,7 @@ namespace NewtonVR
             AttachedPoint.Detached(this);
             AttachedItem = null;
             AttachedPoint = null;
-
-			if (IsHalo)
-			{
-				m_currentScaleState = ScaleState.kScale;
-			}
         }
-
-		private void ScaleAttachedObject(Vector3 startScale, Vector3 endScale)
-		{
-			Vector3 currentScale = Vector3.Lerp (startScale, endScale, Time.deltaTime / NVRPlayer.Instance.m_haloObjectScaleDuration);
-
-			if(AttachedItem)
-			{
-				AttachedItem.transform.localScale = currentScale;
-			}
-
-			if(Mathf.Approximately (currentScale.x, endScale.x))
-			{
-				m_currentScaleState = ScaleState.kIdle;
-			}
-		}
+	
     }
 }

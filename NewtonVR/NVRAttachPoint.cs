@@ -12,9 +12,6 @@ namespace NewtonVR
         private const float VelocityMagic = 3000f;
         private const float AngularVelocityMagic = 25f;
 
-		[HideInInspector]
-		public Vector3 	InitialScale = Vector3.zero;
-
         [HideInInspector]
         public Rigidbody Rigidbody;
 
@@ -41,8 +38,6 @@ namespace NewtonVR
 			// In case of collider not existing in the same entity, then allow user to assign one for this attach point
 			Collider thisCollider = (ThisCollider != null) ? ThisCollider: this.GetComponent<Collider>();
 			AttachPointMapper.Register(thisCollider, this);
-
-			InitialScale = transform.localScale;
         }
 
         protected virtual void Start()
