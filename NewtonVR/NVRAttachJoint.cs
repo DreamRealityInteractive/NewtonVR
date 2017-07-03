@@ -18,6 +18,7 @@ namespace NewtonVR
         public float DropDistance = 0.1f;
 
         public bool MatchRotation = true;
+		public bool IsTryingToAttach = false;
 
         public bool JointCanAttach {
             get { return CanAttach; }
@@ -41,9 +42,16 @@ namespace NewtonVR
                     {
                         point.PullTowards(this);
                     }
+
+					IsTryingToAttach = true;
                 }
             }
         }
+
+		protected virtual void OnTriggerExit(Collider col)
+		{
+			IsTryingToAttach = false;
+		}
 
         protected virtual void FixedUpdate()
         {
