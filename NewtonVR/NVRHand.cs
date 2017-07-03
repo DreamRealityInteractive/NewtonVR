@@ -15,6 +15,13 @@ namespace NewtonVR
         public bool HoldButtonPressed { get { return Inputs[HoldButton].IsPressed; } }
         public float HoldButtonAxis { get { return Inputs[HoldButton].SingleAxis; } }
 
+		public bool UseTwoButtonsToHold = true;			// Player can hold an object by pressing either of two buttons
+		public NVRButtons SecondHoldButton = NVRButtons.Grip;
+		public bool SecondHoldButtonDown { get { return Inputs[SecondHoldButton].PressDown; } }
+		public bool SecondHoldButtonUp { get { return Inputs[SecondHoldButton].PressUp; } }
+		public bool SecondHoldButtonPressed { get { return Inputs[SecondHoldButton].IsPressed; } }
+		public float SecondHoldButtonAxis { get { return Inputs[SecondHoldButton].SingleAxis; } }
+
         public NVRButtons UseButton = NVRButtons.Trigger;
         public bool UseButtonDown { get { return Inputs[UseButton].PressDown; } }
         public bool UseButtonUp { get { return Inputs[UseButton].PressUp; } }
@@ -244,6 +251,11 @@ namespace NewtonVR
                 }
             }
 
+			if(UseTwoButtonsToHold && (HoldButton == SecondHoldButton))
+			{
+				Debug.LogWarning("NVRHand setup wrong. HoldButton and SecondHoldButton are the same.");
+			}
+
 
             InputDevice.Initialize(this);
             InitializeRenderModel();
@@ -311,26 +323,37 @@ namespace NewtonVR
         {
             if (CurrentInteractionStyle == InterationStyle.Hold)
             {
-                if (HoldButtonUp == true)
+				bool isHoldButtonUp = (HoldButtonUp && !SecondHoldButtonPressed);
+				bool isSecondHoldButtonUp = (SecondHoldButtonUp && !HoldButtonPressed);
+				bool isUsingTwoButtonsUp = UseTwoButtonsToHold && (isHoldButtonUp || isSecondHoldButtonUp);
+				bool isUsingSingleButtonUp = !UseTwoButtonsToHold && HoldButtonUp;
+
+				if (isUsingSingleButtonUp || isUsingTwoButtonsUp)
                 {
                     VisibilityLocked = false;
                 }
 
-                if (HoldButtonDown == true)
+				bool isUsingSingleButtonDown = !UseTwoButtonsToHold && HoldButtonDown;
+				bool isUsingTwoButtonsDown = UseTwoButtonsToHold && (HoldButtonDown || SecondHoldButtonDown);
+
+				if (isUsingSingleButtonDown || isUsingTwoButtonsDown)
                 {
                     if (CurrentlyInteracting == null)
                     {
                         PickupClosest();
                     }
                 }
-                else if (HoldButtonUp == true && CurrentlyInteracting != null)
+				else if ((isUsingSingleButtonUp || isUsingTwoButtonsUp) && CurrentlyInteracting != null)
                 {
                     EndInteraction(null);
                 }
             }
             else if (CurrentInteractionStyle == InterationStyle.Toggle)
             {
-                if (HoldButtonDown == true)
+				bool isUsingSingleButtonDown = !UseTwoButtonsToHold && HoldButtonDown;
+				bool isUsingTwoButtonsDown = UseTwoButtonsToHold && (HoldButtonDown || SecondHoldButtonDown);
+
+				if (isUsingSingleButtonDown || isUsingTwoButtonsDown)
                 {
                     if (CurrentHandState == HandState.Idle)
                     {
@@ -383,7 +406,7 @@ namespace NewtonVR
                             CurrentHandState = HandState.GripDownNotInteracting;
                         }
                     }
-                    else if (HoldButtonDown == true && IsInteracting == true)
+					else if ((HoldButtonDown || SecondHoldButtonDown) && IsInteracting == true)
                     {
                         if (CurrentHandState != HandState.GripDownInteracting && VisibilityLocked == false)
                         {
