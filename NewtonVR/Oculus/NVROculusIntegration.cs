@@ -139,6 +139,7 @@ namespace NewtonVR
                 // 1111 add 1101 get 1101
                 _rightEyeCamera.cullingMask = -1;
                 _rightEyeCamera.cullingMask &= ~(1 << LayerMask.NameToLayer("LeftEye"));
+                _rightEyeCamera.tag = "MainCamera";
 
                 // Copy over image effect components from the main camera tagged with "ArtSetupCamera"
                 // to each target eye camera with reflected component values
