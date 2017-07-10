@@ -11,7 +11,7 @@ namespace NewtonVR
 {
     public class NVRGearInputDevice : NVRInputDevice
     {
-        private GameObject RenderModel;
+        private GameObject 		RenderModel;
 
         private Dictionary<NVRButtons, OVRInput.Button> ButtonMapping = new Dictionary<NVRButtons, OVRInput.Button>(new NVRButtonsComparer());
 
@@ -50,7 +50,7 @@ namespace NewtonVR
 
         public override bool GetPressDown(NVRButtons button)
         {
-                return OVRInput.GetDown(GetButtonMap(button));
+			return (button == NVRButtons.Touchpad) ? Input.GetMouseButtonDown(0): OVRInput.GetDown(GetButtonMap(button));
         }
 
         public override bool GetPressUp(NVRButtons button)
