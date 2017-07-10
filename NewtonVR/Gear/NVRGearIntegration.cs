@@ -85,28 +85,9 @@ namespace NewtonVR
     {
         public override void Initialize(NVRPlayer player)
         {
-            //// Start Integration for Holo with NVR //////
+            //// Start Integration for Stereo with NVR //////
             NVRPlayer Player = player;
             Debug.Log("init gear");
-
-            //OVRManager manager = Player.gameObject.AddComponent<OVRManager>();
-            //manager.trackingOriginType = OVRManager.TrackingOrigin.EyeLevel;
-
-            //OVRCameraRig rig = Player.gameObject.AddComponent<OVRCameraRig>();
-            //rig.usePerEyeCameras = true;
-
-            //NVRHelpers.SetProperty(rig, "trackingSpace", Player.transform, true);
-            //NVRHelpers.SetProperty(rig, "centerEyeAnchor", Player.Head.transform, true);
-            //Camera cam = Player.Head.GetComponent<Camera>();
-            //cam.enabled = false;
-            //Camera leftCam = rig.leftEyeAnchor.GetComponent<Camera>();
-            //leftCam.cullingMask = -1;
-            //leftCam.cullingMask &= ~(1 << LayerMask.NameToLayer("RightEye"));
-            //Camera rightCam = rig.rightEyeAnchor.GetComponent<Camera>();
-            //rightCam.cullingMask = -1;
-            //rightCam.cullingMask &= ~(1 << LayerMask.NameToLayer("LeftEye"));
-            //leftCam.allowHDR = false;
-            //rightCam.allowHDR = false;
 
             // Integration for two camera setup needed for Microsoft Holo video with NewtonVr
             Player.Head.gameObject.name = "Head_Left";      // rename original NVR head to avoid confusion in editor
@@ -174,7 +155,7 @@ namespace NewtonVR
                 }
             }
 
-            //// End Integration for Holo with NVR //////
+            //// End Integration for Stereo with NVR //////
         }
 
         public override Vector3 GetPlayspaceBounds()
