@@ -9,43 +9,6 @@ namespace NewtonVR
 {
     public class NVRPlayer : MonoBehaviour
     {
-
-	[Header("MobileInteractions")]
-	public float m_daydreamRotateSpeed = 150.0f;
-	public float m_daydreamFriction = 0.85f;
-	public float m_gearRotateSpeed = 5.0f;
-	public float m_gearFriction = 0.35f;
-
-	public float MobileRotateSpeed
-	{
-		get
-		{
-			if (CurrentIntegrationType == NVRSDKIntegrations.Daydream)
-			{
-				return m_daydreamRotateSpeed;
-			}
-			else
-			{
-				return m_gearRotateSpeed;
-			}
-		}
-	}
-
-	public float MobileFriction
-	{
-		get
-		{
-			if (CurrentIntegrationType == NVRSDKIntegrations.Daydream)
-			{
-				return m_daydreamFriction;
-			}
-			else
-			{
-				return m_gearFriction;
-			}
-		}
-	}
-
         public const decimal NewtonVRVersion = 1.22m;
         public const float NewtonVRExpectedDeltaTime = 0.0111f;
 
