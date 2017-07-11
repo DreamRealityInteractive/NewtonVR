@@ -336,6 +336,15 @@ namespace NewtonVR
                     OnEndInteraction.Invoke();
                 }
             }
+
+			if(AttachedHands.Count > 0 && PickupTransforms.Count > 0)
+			{
+				// Reset PickupTransform
+				NVRHand attachedHand = AttachedHands[0];
+				PickupTransforms[attachedHand].position = this.transform.position;
+				PickupTransforms[attachedHand].rotation = this.transform.rotation;
+				Debug.Log("Reset the PickupTransform of " + attachedHand.name + " because of EndInteraction of the other hand");
+			}
         }
 
         public override void HoveringUpdate(NVRHand hand, float forTime)

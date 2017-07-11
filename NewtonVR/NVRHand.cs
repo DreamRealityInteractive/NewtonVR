@@ -583,7 +583,7 @@ namespace NewtonVR
         {
             if (interactable.CanAttach == true)
             {
-		Debug.Log ("Begin Interaction " + interactable.name + " hand " + this.name);
+				Debug.Log ("Begin Interaction " + interactable.name + " hand " + this.name);
 																
                 if (interactable.AttachedHand != null)
                 {
@@ -596,7 +596,7 @@ namespace NewtonVR
                 CurrentlyInteracting = interactable;
                 CurrentlyInteracting.BeginInteraction(this);
 
-		if (PhysicalController && PhysicalController.hasCustomPhysicalHandController())
+				if (PhysicalController && PhysicalController.hasCustomPhysicalHandController())
                 {
                     PhysicalController.On();        // enable animation with Phyiscal Hand component during interaction
                 }
@@ -615,7 +615,7 @@ namespace NewtonVR
 
             if (CurrentlyInteracting != null)
             {
-		Debug.Log ("End Interaction " + this.gameObject.name + " item " + CurrentlyInteracting.name);
+				Debug.Log ("End Interaction " + this.gameObject.name + " item " + CurrentlyInteracting.name);
                 									  
                 CurrentlyInteracting.EndInteraction(this);
 
@@ -624,7 +624,7 @@ namespace NewtonVR
                     OnEndInteraction.Invoke(CurrentlyInteracting);
                 }
 
-		if (PhysicalController && PhysicalController.hasCustomPhysicalHandController())
+				if (PhysicalController && PhysicalController.hasCustomPhysicalHandController())
                 {
                     PhysicalController.Off();       // disable Phyiscal Hand component after interaction
                 }
