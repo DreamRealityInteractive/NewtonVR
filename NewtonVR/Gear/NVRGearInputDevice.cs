@@ -65,12 +65,12 @@ namespace NewtonVR
 
         public override bool GetTouchDown(NVRButtons button)
         {
-				return false;
+				return (button == NVRButtons.Touchpad) ? Input.GetMouseButtonDown(0): OVRInput.GetDown(GetButtonMap(button));
         }
 
         public override bool GetTouchUp(NVRButtons button)
         {
-				return false;
+				return (button == NVRButtons.Touchpad) ? Input.GetMouseButtonUp(0): OVRInput.GetDown(GetButtonMap(button));
         }
 
         public override bool GetTouch(NVRButtons button)

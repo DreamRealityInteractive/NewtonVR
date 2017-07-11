@@ -31,7 +31,8 @@ namespace NewtonVR
 		public NVRButtons TouchPadButton = NVRButtons.Touchpad;
 		public Vector2 TouchPadPosition { get { return Inputs[TouchPadButton].Axis; } }
 		public bool UseTouchPad { get { return Inputs[TouchPadButton].IsTouched; } }
-		public bool TouchPadDown { get { return Inputs[TouchPadButton].PressDown; } }
+		public bool TouchPadDown { get { return Inputs[TouchPadButton].TouchDown; } }
+		public bool TouchPadClickDown { get { return Inputs[TouchPadButton].PressDown; } }
 
         [HideInInspector]
         public bool IsRight;
