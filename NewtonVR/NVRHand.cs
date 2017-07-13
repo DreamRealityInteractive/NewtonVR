@@ -85,6 +85,11 @@ namespace NewtonVR
 
         private GameObject RenderModel;
 
+		public NVRInputDevice GetInputDevice
+		{
+			get { return InputDevice; }
+		}
+
         public bool IsHovering
         {
             get

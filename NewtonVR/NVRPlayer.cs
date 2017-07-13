@@ -145,6 +145,33 @@ namespace NewtonVR
 
         private Dictionary<Collider, NVRHand> ColliderToHandMapping;
 
+		public bool IsTetheredDevice()
+		{
+			return (CurrentIntegrationType == NVRSDKIntegrations.Oculus || CurrentIntegrationType == NVRSDKIntegrations.SteamVR);
+		}
+
+		public bool AreHandsUsed()
+		{
+			if(CurrentIntegrationType == NVRSDKIntegrations.SteamVR)
+			{
+				return true;
+			}
+			else if(CurrentIntegrationType == NVRSDKIntegrations.Daydream || CurrentIntegrationType == NVRSDKIntegrations.Gear)
+			{
+				return false;
+			}
+			else if(CurrentIntegrationType == NVRSDKIntegrations.Oculus)
+			{
+				// if hands input device is oculus then hands are used. it its remote oculus then they are not used
+				if(LeftHand && LeftHand.GetInputDevice.GetType() == typeof(NVROculusInputDevice))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
         [Space]
 
         public bool DEBUGEnableFallback2D = false;
