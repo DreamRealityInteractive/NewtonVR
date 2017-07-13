@@ -589,6 +589,12 @@ namespace NewtonVR
             if (interactable.CanAttach == true)
             {
 				Debug.Log ("Begin Interaction " + interactable.name + " hand " + this.name);
+
+				// Disable retrieval system if object is held in hand
+				HTW.HTWExaminationObject obj = interactable.gameObject.GetComponent<HTW.HTWExaminationObject> ();
+				if (obj != null) {
+					obj.SpecimenCanBeRetrieved = false;
+				}
 																
                 if (interactable.AttachedHand != null)
                 {
@@ -621,6 +627,12 @@ namespace NewtonVR
             if (CurrentlyInteracting != null)
             {
 				Debug.Log ("End Interaction " + this.gameObject.name + " item " + CurrentlyInteracting.name);
+
+				// Enable retrieval system when object is released from hand
+				HTW.HTWExaminationObject obj = CurrentlyInteracting.gameObject.GetComponent<HTW.HTWExaminationObject> ();
+				if (obj != null) {
+					obj.SpecimenCanBeRetrieved = true;
+				}
                 									  
                 CurrentlyInteracting.EndInteraction(this);
 
