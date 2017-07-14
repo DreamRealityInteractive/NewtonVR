@@ -163,7 +163,7 @@ namespace NewtonVR
 			else if(CurrentIntegrationType == NVRSDKIntegrations.Oculus)
 			{
 				// if hands input device is oculus then hands are used. it its remote oculus then they are not used
-				if(LeftHand && LeftHand.GetInputDevice.GetType() == typeof(NVROculusInputDevice))
+				if(LeftHand && LeftHand.CurrentInputDevice.GetType() == typeof(NVROculusInputDevice))
 				{
 					return true;
 				}

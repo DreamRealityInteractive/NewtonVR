@@ -13,29 +13,17 @@ namespace NewtonVR
     {
         private GameObject RenderModel;
 
-        private OVRInput.Controller Controller;
+        public OVRInput.Controller Controller;
 
         private Dictionary<NVRButtons, OVRInput.Button> ButtonMapping = new Dictionary<NVRButtons, OVRInput.Button>(new NVRButtonsComparer());
-        private Dictionary<NVRButtons, OVRInput.Touch> TouchMapping = new Dictionary<NVRButtons, OVRInput.Touch>(new NVRButtonsComparer());
-        private Dictionary<NVRButtons, OVRInput.NearTouch> NearTouchMapping = new Dictionary<NVRButtons, OVRInput.NearTouch>(new NVRButtonsComparer());
-        private Dictionary<NVRButtons, OVRInput.Axis1D> TriggerMapping = new Dictionary<NVRButtons, OVRInput.Axis1D>(new NVRButtonsComparer());
-        private Dictionary<NVRButtons, OVRInput.Axis2D> StickMapping = new Dictionary<NVRButtons, OVRInput.Axis2D>(new NVRButtonsComparer());
-
+      
         public override void Initialize(NVRHand hand)
         {
             base.Initialize(hand);
 
             SetupButtonMapping();
 
-            if (hand == Hand.Player.LeftHand)
-            {
-                Controller = OVRInput.Controller.LTouch;
-            }
-            else
-            {
-                Controller = OVRInput.Controller.RTouch;
-            }
-            
+            Controller = OVRInput.Controller.Remote;   
         }
 
         protected virtual void SetupButtonMapping()
@@ -44,29 +32,11 @@ namespace NewtonVR
             ButtonMapping.Add(NVRButtons.B, OVRInput.Button.Two);
             ButtonMapping.Add(NVRButtons.X, OVRInput.Button.One);
             ButtonMapping.Add(NVRButtons.Y, OVRInput.Button.Two);
-            ButtonMapping.Add(NVRButtons.Touchpad, OVRInput.Button.PrimaryThumbstick);
             ButtonMapping.Add(NVRButtons.DPad_Up, OVRInput.Button.DpadUp);
             ButtonMapping.Add(NVRButtons.DPad_Down, OVRInput.Button.DpadDown);
             ButtonMapping.Add(NVRButtons.DPad_Left, OVRInput.Button.DpadLeft);
             ButtonMapping.Add(NVRButtons.DPad_Right, OVRInput.Button.DpadRight);
-            ButtonMapping.Add(NVRButtons.Trigger, OVRInput.Button.PrimaryIndexTrigger);
-            ButtonMapping.Add(NVRButtons.Grip, OVRInput.Button.PrimaryHandTrigger);
             ButtonMapping.Add(NVRButtons.System, OVRInput.Button.Back);
-
-            TouchMapping.Add(NVRButtons.A, OVRInput.Touch.One);
-            TouchMapping.Add(NVRButtons.B, OVRInput.Touch.Two);
-            TouchMapping.Add(NVRButtons.X, OVRInput.Touch.One);
-            TouchMapping.Add(NVRButtons.Y, OVRInput.Touch.Two);
-            TouchMapping.Add(NVRButtons.Touchpad, OVRInput.Touch.PrimaryThumbstick);
-            TouchMapping.Add(NVRButtons.Trigger, OVRInput.Touch.PrimaryIndexTrigger);
-            
-            NearTouchMapping.Add(NVRButtons.Touchpad, OVRInput.NearTouch.PrimaryThumbButtons);
-            NearTouchMapping.Add(NVRButtons.Trigger, OVRInput.NearTouch.PrimaryIndexTrigger);
-
-            TriggerMapping.Add(NVRButtons.Grip, OVRInput.Axis1D.PrimaryHandTrigger);
-            TriggerMapping.Add(NVRButtons.Trigger, OVRInput.Axis1D.PrimaryIndexTrigger);
-
-            StickMapping.Add(NVRButtons.Touchpad, OVRInput.Axis2D.PrimaryThumbstick);
         }
 
         private OVRInput.Button GetButtonMap(NVRButtons button)
@@ -79,59 +49,19 @@ namespace NewtonVR
             return ButtonMapping[button];
         }
 
-        private OVRInput.Touch GetTouchMap(NVRButtons button)
-        {
-            if (TouchMapping.ContainsKey(button) == false)
-            {
-                //Debug.LogError("No Oculus touch map configured for: " + button.ToString());
-                return OVRInput.Touch.None;
-            }
-            return TouchMapping[button];
-        }
-
-        private OVRInput.NearTouch GetNearTouchMap(NVRButtons button)
-        {
-            if (NearTouchMapping.ContainsKey(button) == false)
-            {
-                //Debug.LogError("No Oculus near touch map configured for: " + button.ToString());
-                return OVRInput.NearTouch.None;
-            }
-            return NearTouchMapping[button];
-        }
-
-        private OVRInput.Axis1D GetTriggerMap(NVRButtons button)
-        {
-            if (TriggerMapping.ContainsKey(button) == false)
-            {
-                //Debug.LogError("No Oculus trigger map configured for: " + button.ToString());
-                return OVRInput.Axis1D.None;
-            }
-            return TriggerMapping[button];
-        }
-
-        private OVRInput.Axis2D GetStickMap(NVRButtons button)
-        {
-            if (StickMapping.ContainsKey(button) == false)
-            {
-                //Debug.LogError("No Oculus stick map configured for: " + button.ToString());
-                return OVRInput.Axis2D.None;
-            }
-            return StickMapping[button];
-        }
-
         public override float GetAxis1D(NVRButtons button)
         {
-                return OVRInput.Get(GetTriggerMap(button), Controller);
+                return 0.0f;
         }
 
         public override Vector2 GetAxis2D(NVRButtons button)
         {
-                return OVRInput.Get(GetStickMap(button), Controller);
+            return Vector2.zero;
         }
 
         public override bool GetPressDown(NVRButtons button)
         {
-                return OVRInput.GetDown(GetButtonMap(button), Controller);
+            return OVRInput.GetDown(GetButtonMap(button), Controller);
         }
 
         public override bool GetPressUp(NVRButtons button)
@@ -146,32 +76,38 @@ namespace NewtonVR
 
         public override bool GetTouchDown(NVRButtons button)
         {
-                return OVRInput.GetDown(GetTouchMap(button), Controller);
+            return OVRInput.GetDown(OVRInput.Button.DpadDown, Controller) || OVRInput.GetDown(OVRInput.Button.DpadUp, Controller)
+                || OVRInput.GetDown(OVRInput.Button.DpadLeft, Controller) || OVRInput.GetDown(OVRInput.Button.DpadRight, Controller)
+                || OVRInput.GetDown(OVRInput.Button.One, Controller);
         }
 
         public override bool GetTouchUp(NVRButtons button)
         {
-                return OVRInput.GetUp(GetTouchMap(button), Controller);
+            return OVRInput.GetUp(OVRInput.Button.DpadDown, Controller) || OVRInput.GetUp(OVRInput.Button.DpadUp, Controller)
+                || OVRInput.GetUp(OVRInput.Button.DpadLeft, Controller) || OVRInput.GetUp(OVRInput.Button.DpadRight, Controller)
+                || OVRInput.GetUp(OVRInput.Button.One, Controller);
         }
 
         public override bool GetTouch(NVRButtons button)
         {
-                return OVRInput.Get(GetTouchMap(button), Controller);
+            return OVRInput.Get(OVRInput.Button.DpadDown, Controller) || OVRInput.Get(OVRInput.Button.DpadUp, Controller)
+                || OVRInput.Get(OVRInput.Button.DpadLeft, Controller) || OVRInput.Get(OVRInput.Button.DpadRight, Controller)
+                || OVRInput.Get(OVRInput.Button.One, Controller);
         }
 
         public override bool GetNearTouchDown(NVRButtons button)
         {
-                return OVRInput.GetDown(GetNearTouchMap(button), Controller);
+                return false;
         }
 
         public override bool GetNearTouchUp(NVRButtons button)
         {
-                return OVRInput.GetUp(GetNearTouchMap(button), Controller);
+                return false;
         }
 
         public override bool GetNearTouch(NVRButtons button)
         {
-                return OVRInput.Get(GetNearTouchMap(button), Controller);
+                return false;
         }
 
         public override void TriggerHapticPulse(ushort durationMicroSec = 500, NVRButtons button = NVRButtons.Touchpad)
@@ -194,29 +130,19 @@ namespace NewtonVR
         {
             get
             {
-                return OVRInput.GetControllerPositionTracked(Controller);
+                return true;
             }
         }
 
 
         public override GameObject SetupDefaultRenderModel()
         {
-            if (Hand.IsLeft == true)
-            {
-                RenderModel = GameObject.Instantiate(Resources.Load<GameObject>("TouchControllers/oculusTouchLeft"));
-            }
-            else
-            {
-                RenderModel = GameObject.Instantiate(Resources.Load<GameObject>("TouchControllers/oculusTouchRight"));
-            }
-
+            RenderModel = new GameObject("Render Model for " + Hand.gameObject.name);
             RenderModel.name = "Render Model for " + Hand.gameObject.name;
             RenderModel.transform.parent = Hand.transform;
             RenderModel.transform.localPosition = Vector3.zero;
             RenderModel.transform.localRotation = Quaternion.identity;
             RenderModel.transform.localScale = Vector3.one;
-
-            RenderModel.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
 
             return RenderModel;
         }
@@ -228,53 +154,29 @@ namespace NewtonVR
 
         public override string GetDeviceName()
         {
-            if (Hand.HasCustomModel == true)
-            {
-                return "Custom";
-            }
-            else
-            {
-                return OVRInput.GetActiveController().ToString();
-            }
+            return "OculusRemote";
         }
 
         public override Collider[] SetupDefaultPhysicalColliders(Transform ModelParent)
         {
-            Collider[] Colliders = null;
+            Collider[] colliders = null;
 
-            string name = "oculusTouch";
-            if (Hand.IsLeft == true)
-            {
-                name += "Left";
-            }
-            else
-            {
-                name += "Right";
-            }
-            name += "Colliders";
+            SphereCollider defaultCollider = ModelParent.gameObject.AddComponent<SphereCollider>();
+            defaultCollider.isTrigger = true;
+            defaultCollider.radius = 0.15f;
 
-            Transform touchColliders = ModelParent.transform.FindChild(name);
-            if (touchColliders == null)
-            {
-                touchColliders = GameObject.Instantiate(Resources.Load<GameObject>("TouchControllers/" + name)).transform;
-                touchColliders.parent = ModelParent.transform;
-                touchColliders.localPosition = Vector3.zero;
-                touchColliders.localRotation = Quaternion.identity;
-                touchColliders.localScale = Vector3.one;
-            }
+            colliders = new Collider[] { defaultCollider };
 
-            Colliders = touchColliders.GetComponentsInChildren<Collider>();
-
-            return Colliders;
+            return colliders;
         }
 
         public override Collider[] SetupDefaultColliders()
         {
             Collider[] Colliders = null;
-            
+
             SphereCollider OculusCollider = RenderModel.AddComponent<SphereCollider>();
             OculusCollider.isTrigger = true;
-            OculusCollider.radius = 0.05f;
+            OculusCollider.radius = 0.15f;
 
             Colliders = new Collider[] { OculusCollider };
 

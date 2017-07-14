@@ -34,6 +34,9 @@ namespace NewtonVR
 		public bool TouchPadDown { get { return Inputs[TouchPadButton].TouchDown; } }
 		public bool TouchPadClickDown { get { return Inputs[TouchPadButton].PressDown; } }
 
+        public NVRButtons RemoteCentreButton = NVRButtons.A;
+        public bool RemoteCentreClickDown { get { return Inputs[RemoteCentreButton].PressDown; } }
+
         [HideInInspector]
         public bool IsRight;
         [HideInInspector]
@@ -82,12 +85,14 @@ namespace NewtonVR
         private Renderer[] GhostRenderers;
 
         private NVRInputDevice InputDevice;
+        private NVRInputDevice AlternativeInputDevice;
 
         private GameObject RenderModel;
 
-		public NVRInputDevice GetInputDevice
+		public NVRInputDevice CurrentInputDevice
 		{
 			get { return InputDevice; }
+            set { InputDevice = value; }
 		}
 
         public bool IsHovering
@@ -182,6 +187,9 @@ namespace NewtonVR
 
             if (Player.CurrentIntegrationType == NVRSDKIntegrations.Oculus)
             {
+                AlternativeInputDevice = this.gameObject.AddComponent<NVRRemoteOculusInputDevice>();
+                AlternativeInputDevice.Initialize(this);
+
                 InputDevice = this.gameObject.AddComponent<NVROculusInputDevice>();
 
                 if (Player.OverrideOculus == true)
@@ -290,6 +298,22 @@ namespace NewtonVR
             UpdateHovering();
 
             UpdateVisibilityAndColliders();
+
+            UpdateOculusController();
+        }
+
+        private void UpdateOculusController()
+        {
+#if NVR_Oculus
+            if (!(OVRInput.IsControllerConnected(OVRInput.Controller.LTouch) && OVRInput.IsControllerConnected(OVRInput.Controller.RTouch)))
+            {
+                InputDevice = AlternativeInputDevice;
+                Debug.Log("Change input device to " + InputDevice.GetType());
+
+                // make mesh invisible
+                transform.GetChild(0).gameObject.SetActive(false);
+            }
+#endif
         }
 
         protected void UpdateHovering()
