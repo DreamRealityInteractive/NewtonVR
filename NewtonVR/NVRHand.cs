@@ -62,7 +62,8 @@ namespace NewtonVR
         [HideInInspector]
         public HandState CurrentHandState = HandState.Uninitialized;
 
-        private Dictionary<NVRInteractable, Dictionary<Collider, float>> CurrentlyHoveringOver;
+		[HideInInspector]
+		public Dictionary<NVRInteractable, Dictionary<Collider, float>> CurrentlyHoveringOver;
 
         public NVRInteractable CurrentlyInteracting;
 
