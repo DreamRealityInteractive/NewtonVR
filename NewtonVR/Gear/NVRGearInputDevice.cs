@@ -26,6 +26,7 @@ namespace NewtonVR
         {
 			ButtonMapping.Add(NVRButtons.Touchpad, OVRInput.Button.One);
             ButtonMapping.Add(NVRButtons.B, OVRInput.Button.Two);
+			ButtonMapping.Add(NVRButtons.Y, OVRInput.Button.Two);
         }
 
         private OVRInput.Button GetButtonMap(NVRButtons button)
@@ -50,17 +51,35 @@ namespace NewtonVR
 
         public override bool GetPressDown(NVRButtons button)
         {
+			// Back button mapped in NVRHands as OVRInput.Button.Two but this doesnt work on gear
+			if(button == NVRButtons.Y || button == NVRButtons.B) 
+			{
+				return Input.GetKeyDown(KeyCode.Escape);
+			}
+
 			return (button == NVRButtons.Touchpad) ? Input.GetMouseButtonDown(0): OVRInput.GetDown(GetButtonMap(button));
         }
 
         public override bool GetPressUp(NVRButtons button)
         {
-                return OVRInput.GetUp(GetButtonMap(button));
+			// Back button mapped in NVRHands as OVRInput.Button.Two but this doesnt work on gear
+			if(button == NVRButtons.Y || button == NVRButtons.B) 
+			{
+				return Input.GetKeyUp(KeyCode.Escape);
+			}
+
+            return OVRInput.GetUp(GetButtonMap(button));
         }
 
         public override bool GetPress(NVRButtons button)
         {
-                return OVRInput.Get(GetButtonMap(button));
+			// Back button mapped in NVRHands as OVRInput.Button.Two but this doesnt work on gear
+			if(button == NVRButtons.Y || button == NVRButtons.B) 
+			{
+				return Input.GetKey(KeyCode.Escape);
+			}
+			
+            return OVRInput.Get(GetButtonMap(button));
         }
 
         public override bool GetTouchDown(NVRButtons button)

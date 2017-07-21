@@ -41,6 +41,8 @@ namespace NewtonVR
 			switch(button)
 			{
 			case NVRButtons.ApplicationMenu:
+			case NVRButtons.B:
+			case NVRButtons.Y:
 				return GvrController.AppButtonDown;
 			case NVRButtons.System:
 				return GvrController.HomeButtonDown;
@@ -56,6 +58,8 @@ namespace NewtonVR
 			switch(button)
 			{
 			case NVRButtons.ApplicationMenu:
+			case NVRButtons.B:
+			case NVRButtons.Y:
 				return GvrController.AppButtonUp;
 			case NVRButtons.Touchpad:
 				return GvrController.ClickButtonUp;
@@ -69,6 +73,8 @@ namespace NewtonVR
 			switch(button)
 			{
 			case NVRButtons.ApplicationMenu:
+			case NVRButtons.B:
+			case NVRButtons.Y:
 				return GvrController.AppButton;
 			case NVRButtons.Touchpad:
 				return GvrController.ClickButton;
