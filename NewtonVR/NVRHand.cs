@@ -37,6 +37,11 @@ namespace NewtonVR
         public NVRButtons RemoteCentreButton = NVRButtons.A;
         public bool RemoteCentreClickDown { get { return Inputs[RemoteCentreButton].PressDown; } }
 
+		// menu
+		public NVRButtons MenuButton = NVRButtons.ApplicationMenu;
+		public bool MenuButtonDown { get { return Inputs[MenuButton].PressDown; } }
+
+
         [HideInInspector]
         public bool IsRight;
         [HideInInspector]
