@@ -25,6 +25,11 @@ namespace NewtonVR
             set { CanAttach = value; }
         }
 
+		public void ForceDetach()
+		{
+			Detach();
+		}
+
         protected virtual void OnTriggerStay(Collider col)
         {
             if (IsAttached == false && CanAttach == true)
