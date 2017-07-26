@@ -96,6 +96,9 @@ namespace NewtonVR
 
         private GameObject RenderModel;
 
+        private HTW.HTWHandController m_leftHandController;
+        private HTW.HTWHandController m_rightHandController;
+
 		public NVRInputDevice CurrentInputDevice
 		{
 			get { return InputDevice; }
@@ -255,7 +258,6 @@ namespace NewtonVR
 
             if (Player.OverrideAll)
             {
-
                 if (IsLeft)
                 {
                     CustomModel = Player.OverrideAllLeftHand;
@@ -281,10 +283,16 @@ namespace NewtonVR
 
             InputDevice.Initialize(this);
             InitializeRenderModel();
+
+            m_leftHandController = Player.LeftHand.GetComponentInChildren<HTW.HTWHandController>();
         }
 
         protected virtual void Update()
         {
+        //    this.transform.position += this.transform.right / 16f;
+        //    this.transform.position -= this.transform.forward / 8f;
+      //      this.transform.position -= this.transform.up / 32f;
+
             if (CurrentHandState == HandState.Uninitialized)
             {
                 if (InputDevice == null || InputDevice.ReadyToInitialize() == false)
@@ -343,6 +351,18 @@ namespace NewtonVR
                 if (Player.VibrateOnHover == true)
                 {
                     InputDevice.TriggerHapticPulse(100);
+                    // HTWHandController.setIsHovering(true);
+                    if (m_leftHandController)
+                    {
+                        m_leftHandController.setIsHovering(true);
+                    }
+                }
+            }
+            else
+            {
+                if (m_leftHandController)
+                {
+                    m_leftHandController.setIsHovering(false);
                 }
             }
         }
