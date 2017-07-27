@@ -43,6 +43,8 @@ namespace NewtonVR
 		public NVRButtons MenuButton3 = NVRButtons.ApplicationMenu;
 		public bool MenuButtonDown { get { return Inputs[MenuButton1].PressDown || Inputs[MenuButton2].PressDown || Inputs[MenuButton3].PressDown; } }
 
+		[HideInInspector]
+		public bool AbleToInteract = true;
 
         [HideInInspector]
         public bool IsRight;
@@ -380,6 +382,11 @@ namespace NewtonVR
 
         protected void UpdateInteractions()
         {
+			if(!AbleToInteract)
+			{
+				return;
+			}
+
             if (CurrentInteractionStyle == InterationStyle.Hold)
             {
 				bool isHoldButtonUp = (HoldButtonUp && !SecondHoldButtonPressed);
