@@ -91,6 +91,10 @@ namespace NewtonVR
                 _leftEyeCamera.farClipPlane = 200f;
                 _leftEyeCamera.nearClipPlane = 0.01f;
 
+                // Background color setup
+                _leftEyeCamera.clearFlags = CameraClearFlags.SolidColor;
+                _leftEyeCamera.backgroundColor = new Color(0.00f, 0.0f, 0.025f);
+
                 // Set all layers to 1, then compare with & to change "RightEye" layer to 0 while keeping all others 1
                 // 1111 add 1101 get 1101
                 _leftEyeCamera.cullingMask = -1;
@@ -134,6 +138,10 @@ namespace NewtonVR
                 _rightEyeCamera.stereoTargetEye = StereoTargetEyeMask.Right;
                 _rightEyeCamera.farClipPlane = 200f;
                 _rightEyeCamera.nearClipPlane = 0.01f;
+
+                // Background color setup
+                _rightEyeCamera.clearFlags = CameraClearFlags.SolidColor;
+                _rightEyeCamera.backgroundColor = new Color(0.00f, 0.0f, 0.025f);
 
                 // Set all layers to 1, then compare with & to change "LeftEye" layer to 0 while keeping all others 1
                 // 1111 add 1101 get 1101
