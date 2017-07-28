@@ -288,6 +288,8 @@ namespace NewtonVR
             InitializeRenderModel();
 
             m_leftHandController = Player.LeftHand.GetComponentInChildren<HTW.HTWHandController>();
+
+            //UpdateOculusController();
         }
 
         protected virtual void Update()
@@ -305,6 +307,7 @@ namespace NewtonVR
                 else
                 {
                     Initialize();
+                    UpdateOculusController();
                     return;
                 }
             }
@@ -317,7 +320,7 @@ namespace NewtonVR
 
             UpdateVisibilityAndColliders();
 
-            UpdateOculusController();
+            //UpdateOculusController();
         }
 
         private void UpdateOculusController()
