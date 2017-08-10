@@ -99,10 +99,9 @@ namespace NewtonVR
 
         private GameObject RenderModel;
 
-        private HTW.HTWHandController m_leftHandController;
-        private HTW.HTWHandController m_rightHandController;
+        private HTW.HTWHandController m_handController;
 
-		public NVRInputDevice CurrentInputDevice
+        public NVRInputDevice CurrentInputDevice
 		{
 			get { return InputDevice; }
             set { InputDevice = value; }
@@ -287,7 +286,11 @@ namespace NewtonVR
             InputDevice.Initialize(this);
             InitializeRenderModel();
 
-            m_leftHandController = Player.LeftHand.GetComponentInChildren<HTW.HTWHandController>();
+            //m_leftHandController = Player.LeftHand.GetComponentInChildren<HTW.HTWHandController>();
+            //m_rightHandController = Player.RightHand.GetComponentInChildren<HTW.HTWHandController>();
+
+
+            m_handController = gameObject.GetComponentInChildren<HTW.HTWHandController>();
 
             //UpdateOculusController();
         }
@@ -357,18 +360,18 @@ namespace NewtonVR
                 if (Player.VibrateOnHover == true)
                 {
                     InputDevice.TriggerHapticPulse(100);
-                    // HTWHandController.setIsHovering(true);
-                    if (m_leftHandController)
+
+                    if (m_handController)
                     {
-                        m_leftHandController.setIsHovering(true);
+                        m_handController.setIsHovering(true);
                     }
                 }
             }
             else
             {
-                if (m_leftHandController)
+                if (m_handController)
                 {
-                    m_leftHandController.setIsHovering(false);
+                    m_handController.setIsHovering(false);
                 }
             }
         }
