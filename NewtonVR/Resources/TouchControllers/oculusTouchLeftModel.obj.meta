@@ -48,7 +48,7 @@ ModelImporter:
     4300012: tooche1_group3_face_control_surface_group2
     4300014: tooche1_group3_trigger
   materials:
-    importMaterials: 1
+    importMaterials: 0
     materialName: 0
     materialSearch: 1
   animations:
