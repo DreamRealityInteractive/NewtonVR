@@ -43,7 +43,7 @@ namespace NewtonVR
 		public NVRButtons MenuButton3 = NVRButtons.ApplicationMenu;
 		public bool MenuButtonDown { get { return Inputs[MenuButton1].PressDown || Inputs[MenuButton2].PressDown || Inputs[MenuButton3].PressDown; } }
 
-		[HideInInspector]
+        [HideInInspector]
 		public bool AbleToInteract = true;
 
         [HideInInspector]
@@ -290,7 +290,7 @@ namespace NewtonVR
             //m_rightHandController = Player.RightHand.GetComponentInChildren<HTW.HTWHandController>();
 
 
-            m_handController = gameObject.GetComponentInChildren<HTW.HTWHandController>();
+      //      m_handController = gameObject.GetComponentInChildren<HTW.HTWHandController>();
 
             //UpdateOculusController();
         }
@@ -393,6 +393,7 @@ namespace NewtonVR
 				return;
 			}
 
+
             if (CurrentInteractionStyle == InterationStyle.Hold)
             {
 				bool isHoldButtonUp = (HoldButtonUp && !SecondHoldButtonPressed);
@@ -403,6 +404,7 @@ namespace NewtonVR
 				if (isUsingSingleButtonUp || isUsingTwoButtonsUp)
                 {
                     VisibilityLocked = false;
+                    m_handController.setIsGrabbing(false);
                 }
 
 				bool isUsingSingleButtonDown = !UseTwoButtonsToHold && HoldButtonDown;
@@ -410,6 +412,8 @@ namespace NewtonVR
 
 				if (isUsingSingleButtonDown || isUsingTwoButtonsDown)
                 {
+                    m_handController.setIsGrabbing(true);
+
                     if (CurrentlyInteracting == null)
                     {
                         PickupClosest();
@@ -924,6 +928,8 @@ namespace NewtonVR
             else
             {
                 colliders = RenderModel.GetComponentsInChildren<Collider>(); //note: these should be trigger colliders
+
+                m_handController = gameObject.GetComponentInChildren<HTW.HTWHandController>();
             }
 
             Player.RegisterHand(this);
