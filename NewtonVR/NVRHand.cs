@@ -99,7 +99,8 @@ namespace NewtonVR
 
         private GameObject RenderModel;
 
-        private HTW.HTWHandController m_handController;
+        private HTW.HTWHandController       m_handController;
+        private HTW.HTWChildCollision []      m_handColliders;
 
         public NVRInputDevice CurrentInputDevice
 		{
@@ -405,6 +406,11 @@ namespace NewtonVR
                 {
                     VisibilityLocked = false;
                     m_handController.setIsGrabbing(false);
+
+                    foreach (HTW.HTWChildCollision col in m_handColliders)
+                    {
+                        col.unfreezeHand();
+                    }
                 }
 
 				bool isUsingSingleButtonDown = !UseTwoButtonsToHold && HoldButtonDown;
@@ -930,6 +936,7 @@ namespace NewtonVR
                 colliders = RenderModel.GetComponentsInChildren<Collider>(); //note: these should be trigger colliders
 
                 m_handController = gameObject.GetComponentInChildren<HTW.HTWHandController>();
+                m_handColliders = gameObject.GetComponentsInChildren<HTW.HTWChildCollision>();
             }
 
             Player.RegisterHand(this);
