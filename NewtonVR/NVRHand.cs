@@ -100,7 +100,10 @@ namespace NewtonVR
         private GameObject RenderModel;
 
         private HTW.HTWHandController       m_handController;
-        private HTW.HTWChildCollision []      m_handColliders;
+        private HTW.HTWChildCollision []    m_handColliders;
+        private Material                    m_handMaterial;
+        private Texture                     m_handTexture;
+        private Color                       m_handAmbientColor;
 
         public NVRInputDevice CurrentInputDevice
 		{
@@ -937,6 +940,9 @@ namespace NewtonVR
 
                 m_handController = gameObject.GetComponentInChildren<HTW.HTWHandController>();
                 m_handColliders = gameObject.GetComponentsInChildren<HTW.HTWChildCollision>();
+                m_handMaterial = m_handController.gameObject.GetComponentInChildren<Renderer>().material;
+                m_handTexture = m_handMaterial.mainTexture;
+                m_handAmbientColor = m_handMaterial.color;
             }
 
             Player.RegisterHand(this);
@@ -999,6 +1005,27 @@ namespace NewtonVR
         {
             SetVisibility(VisibilityLevel.Ghost);
             PhysicalController.Off();
+        }
+
+        public void SetOpaque()
+        {
+            if (m_handController != null)
+            {
+                NVRHelpers.SetOpaque(m_handController.gameObject.GetComponentInChildren<Renderer>().material);
+                m_handMaterial.color = m_handAmbientColor;
+                m_handMaterial.mainTexture = m_handTexture;
+            }
+        }
+
+        public void SetTransparent()
+        {
+            if (m_handController != null)
+            {
+                Color transparentcolor = Color.white;
+                transparentcolor.a = (float)VisibilityLevel.Ghost / 100f;
+
+                NVRHelpers.SetTransparent(m_handController.gameObject.GetComponentInChildren<Renderer>().material, transparentcolor);
+            }
         }
     }
 
