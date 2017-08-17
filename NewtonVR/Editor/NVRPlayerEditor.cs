@@ -64,6 +64,7 @@ namespace NewtonVR
             hasOculusSDKDefine = scriptingDefines.Contains(OculusDefine);
 			hasDaydreamVRDefine = scriptingDefines.Contains(DaydreamDefine);
 			hasGearVRDefine = scriptingDefine.Contains(GearDefine);
+            hasSteamVRDefine = scriptingDefines.Contains(SteamVRDefine);
 
             waitingForReload = false;
             ClearProgressBar();
