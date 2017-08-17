@@ -670,10 +670,16 @@ namespace NewtonVR
 
 				// Disable retrieval system if object is held in hand
 				HTW.HTWExaminationObject obj = interactable.gameObject.GetComponent<HTW.HTWExaminationObject> ();
-				if (obj != null) {
+                HTW.HTWQuizBlock block = interactable.gameObject.GetComponent<HTW.HTWQuizBlock>();
+
+                if (obj != null) {
 					obj.SpecimenCanBeRetrieved = false;
 				}
-																
+                else if (block != null)
+                {
+                    block.QuizBlockCanBeRetrieved = false;
+                }
+
                 if (interactable.AttachedHand != null)
                 {
                     if (interactable.AllowTwoHanded == false)
@@ -708,9 +714,15 @@ namespace NewtonVR
 
 				// Enable retrieval system when object is released from hand
 				HTW.HTWExaminationObject obj = CurrentlyInteracting.gameObject.GetComponent<HTW.HTWExaminationObject> ();
+                HTW.HTWQuizBlock block = CurrentlyInteracting.gameObject.GetComponent<HTW.HTWQuizBlock>();
+
 				if (obj != null) {
 					obj.SpecimenCanBeRetrieved = true;
 				}
+                else if (block != null)
+                {
+                    block.QuizBlockCanBeRetrieved = true;
+                }
                 									  
                 CurrentlyInteracting.EndInteraction(this);
 
