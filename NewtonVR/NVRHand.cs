@@ -330,6 +330,17 @@ namespace NewtonVR
             //UpdateOculusController();
         }
 
+		public void UseRemoteInput(bool _useRemote){
+			if (_useRemote && InputDevice == AlternativeInputDevice)
+				return;
+
+			InputDevice = _useRemote ? AlternativeInputDevice : GetComponent<NVROculusInputDevice>();
+			SkinnedMeshRenderer handSkin = GetComponentInChildren<SkinnedMeshRenderer> ();
+			handSkin.enabled = !_useRemote;
+			Collider handCollider = GetComponentInChildren<Collider> ();
+			handCollider.enabled = !_useRemote;
+		}
+
         private void UpdateOculusController()
         {
 #if NVR_Oculus
