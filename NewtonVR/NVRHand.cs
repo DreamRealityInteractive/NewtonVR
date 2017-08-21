@@ -294,7 +294,7 @@ namespace NewtonVR
             //m_rightHandController = Player.RightHand.GetComponentInChildren<HTW.HTWHandController>();
 
 
-      //      m_handController = gameObject.GetComponentInChildren<HTW.HTWHandController>();
+            //m_handController = gameObject.GetComponentInChildren<HTW.HTWHandController>();
 
             //UpdateOculusController();
         }
@@ -408,7 +408,11 @@ namespace NewtonVR
 				if (isUsingSingleButtonUp || isUsingTwoButtonsUp)
                 {
                     VisibilityLocked = false;
-                    m_handController.setIsGrabbing(false);
+
+					if (m_handController != null)
+					{
+						m_handController.setIsGrabbing (false);
+					}
 
                     foreach (HTW.HTWChildCollision col in m_handColliders)
                     {
@@ -421,7 +425,10 @@ namespace NewtonVR
 
 				if (isUsingSingleButtonDown || isUsingTwoButtonsDown)
                 {
-                    m_handController.setIsGrabbing(true);
+					if (m_handController != null)
+					{
+						m_handController.setIsGrabbing (true);
+					}
 
                     if (CurrentlyInteracting == null)
                     {

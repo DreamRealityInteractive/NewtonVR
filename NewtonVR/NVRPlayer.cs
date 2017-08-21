@@ -5,7 +5,6 @@ using UnityEngine.VR;
 using System.Linq;
 using UnityEngine.Events;
 
-// test
 namespace NewtonVR
 {
     public class NVRPlayer : MonoBehaviour
