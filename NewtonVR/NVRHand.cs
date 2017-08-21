@@ -425,10 +425,13 @@ namespace NewtonVR
 						m_handController.setIsGrabbing (false);
 					}
 
-                    foreach (HTW.HTWChildCollision col in m_handColliders)
-                    {
-                        col.unfreezeHand();
-                    }
+					if(m_handColliders != null)
+					{
+                    	foreach (HTW.HTWChildCollision col in m_handColliders)
+                    	{
+                    	    col.unfreezeHand();
+                    	}
+					}
                 }
 
 				bool isUsingSingleButtonDown = !UseTwoButtonsToHold && HoldButtonDown;
