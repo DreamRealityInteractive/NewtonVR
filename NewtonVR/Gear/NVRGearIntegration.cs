@@ -104,7 +104,7 @@ namespace NewtonVR
             camRight.stereoTargetEye = StereoTargetEyeMask.Right;
             camRight.cullingMask = -1;
             camRight.cullingMask &= ~(1 << LayerMask.NameToLayer("LeftEye"));
-            camRight.farClipPlane = 200f;
+            camRight.farClipPlane = 160f;
             camRight.nearClipPlane = 0.01f;
             camRight.allowHDR = true;
             camRight.depth = -1;
@@ -118,7 +118,7 @@ namespace NewtonVR
                 // 1111 add 1101 get 1101
                 camLeft.cullingMask = -1;
                 camLeft.cullingMask &= ~(1 << LayerMask.NameToLayer("RightEye"));
-                camLeft.farClipPlane = 200f;
+                camLeft.farClipPlane = 160f;
                 camLeft.nearClipPlane = 0.01f;
                 camLeft.allowHDR = true;
             }

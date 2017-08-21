@@ -88,7 +88,7 @@ namespace NewtonVR
 
                 // Adjust clipping and target eye for stereo camera
                 _leftEyeCamera.stereoTargetEye = StereoTargetEyeMask.Left;
-                _leftEyeCamera.farClipPlane = 200f;
+                _leftEyeCamera.farClipPlane = 160f;
                 _leftEyeCamera.nearClipPlane = 0.01f;
 
                 // Background color setup
@@ -136,7 +136,7 @@ namespace NewtonVR
 
                 // Adjust clipping and target eye for stereo camera
                 _rightEyeCamera.stereoTargetEye = StereoTargetEyeMask.Right;
-                _rightEyeCamera.farClipPlane = 200f;
+                _rightEyeCamera.farClipPlane = 160f;
                 _rightEyeCamera.nearClipPlane = 0.01f;
 
                 // Background color setup
