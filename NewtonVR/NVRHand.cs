@@ -327,7 +327,6 @@ namespace NewtonVR
 
             UpdateVisibilityAndColliders();
 
-            //UpdateOculusController();
         }
 
 		public void UseRemoteInput(bool _useRemote){
@@ -341,19 +340,6 @@ namespace NewtonVR
 			handCollider.enabled = !_useRemote;
 		}
 
-        private void UpdateOculusController()
-        {
-#if NVR_Oculus
-            if (!(OVRInput.IsControllerConnected(OVRInput.Controller.LTouch) && OVRInput.IsControllerConnected(OVRInput.Controller.RTouch)))
-            {
-                InputDevice = AlternativeInputDevice;
-                Debug.Log("Change input device to " + InputDevice.GetType());
-
-                // make mesh invisible
-                transform.GetChild(0).gameObject.SetActive(false);
-            }
-#endif
-        }
 
         protected void UpdateHovering()
         {
