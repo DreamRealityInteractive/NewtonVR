@@ -314,7 +314,7 @@ namespace NewtonVR
                 else
                 {
                     Initialize();
-                    UpdateOculusController();
+                    //UpdateOculusController();
                     return;
                 }
             }
