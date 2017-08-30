@@ -337,8 +337,11 @@ namespace NewtonVR
 			InputDevice = _useRemote ? AlternativeInputDevice : GetComponent<NVROculusInputDevice>();
 			SkinnedMeshRenderer handSkin = GetComponentInChildren<SkinnedMeshRenderer> ();
 			handSkin.enabled = !_useRemote;
-			Collider handCollider = GetComponentInChildren<Collider> ();
-			handCollider.enabled = !_useRemote;
+			Collider[] handColliders = GetComponentsInChildren<Collider> ();
+            for (int i = 0; i < handColliders.Length; i++)
+            {
+		        handColliders[i].enabled = !_useRemote;
+            }
 		}
 
         private void UpdateOculusController()
@@ -955,12 +958,15 @@ namespace NewtonVR
         public void Initialize()
         {
             Rigidbody = this.GetComponent<Rigidbody>();
+
+#if !UNITY_ANDROID 
             if (Rigidbody == null)
                 Rigidbody = this.gameObject.AddComponent<Rigidbody>();
             Rigidbody.isKinematic = true;
             Rigidbody.maxAngularVelocity = float.MaxValue;
             Rigidbody.useGravity = false;
 
+#endif
             Collider[] colliders = null;
 
             if (CustomModel == null)
