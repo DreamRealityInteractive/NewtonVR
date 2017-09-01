@@ -154,7 +154,6 @@ namespace NewtonVR
 			//SphereCollider defaultCollider = ModelParent.gameObject.AddComponent<SphereCollider>();
 			//defaultCollider.isTrigger = true;
 			//defaultCollider.radius = 0.15f;
-            //
 			//colliders = new Collider[] { defaultCollider };
 
 			return colliders;
@@ -167,7 +166,6 @@ namespace NewtonVR
             //SphereCollider OculusCollider = RenderModel.AddComponent<SphereCollider>();
             //OculusCollider.isTrigger = true;
             //OculusCollider.radius = 0.15f;
-            //
             //Colliders = new Collider[] { OculusCollider };
 
             return Colliders;
