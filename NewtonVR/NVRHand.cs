@@ -362,11 +362,18 @@ namespace NewtonVR
             {
                 if (Player.VibrateOnHover == true)
                 {
-                    InputDevice.TriggerHapticPulse(100);
 
                     if (m_handController)
                     {
-                        m_handController.setIsHovering(true);
+                        if (m_handController.CanInteract)
+                        {
+                            m_handController.setIsHovering(true);
+                            InputDevice.TriggerHapticPulse(100);
+                        }
+                    }
+                    else
+                    {
+                        InputDevice.TriggerHapticPulse(100);
                     }
                 }
             }
@@ -393,7 +400,31 @@ namespace NewtonVR
         {
 			if(!AbleToInteract)
 			{
-				return;
+                // If hands can not interact but game menu is not active, allow hands to grip when triggers are pulled
+                if (m_handController != null && !m_handController.MenuFrozeHands)
+                {
+                    if (CurrentInteractionStyle == InterationStyle.Hold)
+                    {
+                        bool isHoldButtonUp = (HoldButtonUp && !SecondHoldButtonPressed);
+                        bool isSecondHoldButtonUp = (SecondHoldButtonUp && !HoldButtonPressed);
+                        bool isUsingTwoButtonsUp = UseTwoButtonsToHold && (isHoldButtonUp || isSecondHoldButtonUp);
+                        bool isUsingSingleButtonUp = !UseTwoButtonsToHold && HoldButtonUp;
+
+                        if (isUsingSingleButtonUp || isUsingTwoButtonsUp)
+                        {
+                            m_handController.setIsGrabbing(false);
+                        }
+                    }
+
+                    bool isUsingSingleButtonDown = !UseTwoButtonsToHold && HoldButtonDown;
+                    bool isUsingTwoButtonsDown = UseTwoButtonsToHold && (HoldButtonDown || SecondHoldButtonDown);
+
+                    if (isUsingSingleButtonDown || isUsingTwoButtonsDown)
+                    {
+                        m_handController.setIsGrabbing(true);
+                    }
+                }
+                return;
 			}
 
 
