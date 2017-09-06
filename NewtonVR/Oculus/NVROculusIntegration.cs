@@ -91,7 +91,7 @@ namespace NewtonVR
                 _leftEyeCamera.farClipPlane = 160f;
                 _leftEyeCamera.nearClipPlane = 0.01f;
 
-                // Background color setup
+                // Background color setup   //change to fix NewtonSubmodule link
            //     _leftEyeCamera.clearFlags = CameraClearFlags.SolidColor;
            //     _leftEyeCamera.backgroundColor = new Color(0.00f, 0.0f, 0.025f);
 
