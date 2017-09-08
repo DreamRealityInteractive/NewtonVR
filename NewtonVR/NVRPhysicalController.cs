@@ -276,7 +276,8 @@ namespace NewtonVR
                 CustomChildrenColliders = customColliders.GetComponentsInChildren<HTW.HTWChildCollision>();
                 foreach (HTW.HTWChildCollision col in CustomChildrenColliders)
                 {
-                    col.setAnimators(anims);
+                    // NO LONGER USING PHYSICAL HANDS OR MULTIPLE ANIMATORS -- TODO: REMOVE ALL REFERENCES TO ANIMATORS IN NVRPHYSICALCONTROLLER
+                   // col.setAnimators(anims);
                 }
                 // Reference for toggling customColliders on/off to avoid physics collision when hand is not grabbing
                 CustomColliderRoot = customColliders;
