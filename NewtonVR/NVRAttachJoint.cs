@@ -93,6 +93,7 @@ namespace NewtonVR
             AttachedPoint.Detached(this);
             AttachedItem = null;
             AttachedPoint = null;
+			IsTryingToAttach = false;
         }
 	
     }

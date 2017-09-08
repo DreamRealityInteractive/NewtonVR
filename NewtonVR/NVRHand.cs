@@ -706,13 +706,18 @@ namespace NewtonVR
         {
             if (interactable.CanAttach == true)
             {
-				Debug.Log ("Begin Interaction " + interactable.name + " hand " + this.name);
+				//Debug.Log ("Begin Interaction " + interactable.name + " hand " + this.name);
 
 				// Disable retrieval system if object is held in hand
 				HTW.HTWExaminationObject obj = interactable.gameObject.GetComponent<HTW.HTWExaminationObject> ();
                 HTW.HTWQuizBlock block = interactable.gameObject.GetComponent<HTW.HTWQuizBlock>();
+				HTW.HTWDestructibleObjectPiece singlePiece = interactable.gameObject.GetComponentInParent<HTW.HTWDestructibleObjectPiece>();
 
-                if (obj != null) {
+				if(singlePiece != null)
+				{
+					singlePiece.PieceCanBeRetrieved = false;
+				}
+                else if (obj != null) {
 					obj.SpecimenCanBeRetrieved = false;
 				}
                 else if (block != null)
@@ -750,13 +755,18 @@ namespace NewtonVR
 
             if (CurrentlyInteracting != null)
             {
-				Debug.Log ("End Interaction " + this.gameObject.name + " item " + CurrentlyInteracting.name);
+				//Debug.Log ("End Interaction " + this.gameObject.name + " item " + CurrentlyInteracting.name);
 
 				// Enable retrieval system when object is released from hand
 				HTW.HTWExaminationObject obj = CurrentlyInteracting.gameObject.GetComponent<HTW.HTWExaminationObject> ();
                 HTW.HTWQuizBlock block = CurrentlyInteracting.gameObject.GetComponent<HTW.HTWQuizBlock>();
+				HTW.HTWDestructibleObjectPiece singlePiece = CurrentlyInteracting.gameObject.GetComponentInParent<HTW.HTWDestructibleObjectPiece>();
 
-				if (obj != null) {
+				if(singlePiece != null)
+				{
+					singlePiece.PieceCanBeRetrieved = true;
+				}
+				else if (obj != null) {
 					obj.SpecimenCanBeRetrieved = true;
 				}
                 else if (block != null)

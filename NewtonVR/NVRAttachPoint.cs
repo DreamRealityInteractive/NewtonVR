@@ -95,7 +95,7 @@ namespace NewtonVR
             Vector3 positionDelta = joint.transform.position - this.transform.position;
             Vector3 velocityTarget = (positionDelta * velocityMagic) * Time.deltaTime;
 
-            if (float.IsNaN(velocityTarget.x) == false)
+			if (float.IsNaN(velocityTarget.x) == false && Item.Rigidbody)
             {
                 velocityTarget = Vector3.MoveTowards(Item.Rigidbody.velocity, velocityTarget, MaxVelocityChange);
                 Item.AddExternalVelocity(velocityTarget);
