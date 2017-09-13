@@ -7,7 +7,6 @@ namespace NewtonVR
     {
         public void Initialize()
         {
-            // Custom changes for newtonVR here:
         }
     }
 }
