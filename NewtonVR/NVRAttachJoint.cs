@@ -90,7 +90,11 @@ namespace NewtonVR
 
         protected virtual void Detach()
         {
-            AttachedPoint.Detached(this);
+			if(AttachedPoint)
+			{
+            	AttachedPoint.Detached(this);
+			}
+
             AttachedItem = null;
             AttachedPoint = null;
 			IsTryingToAttach = false;
