@@ -158,6 +158,7 @@ namespace NewtonVR
             Vector3 targetHandPosition;
             Quaternion targetHandRotation;
 
+
             GetTargetValues(out targetHandPosition, out targetHandRotation, out targetItemPosition, out targetItemRotation);
 
 
@@ -319,6 +320,10 @@ namespace NewtonVR
             {
                 Destroy(PickupTransforms[hand].gameObject);
                 PickupTransforms.Remove(hand);
+
+                // DA addition: reset velocity when one hand releases on a two handed interaction
+                // This improves behaviour on object shooting when releasing during hand scaling
+                ResetVelocityHistory(); 
             }
 
             if (PickupTransforms.Count == 0)
@@ -344,7 +349,11 @@ namespace NewtonVR
 				PickupTransforms[attachedHand].position = this.transform.position;
 				PickupTransforms[attachedHand].rotation = this.transform.rotation;
 				Debug.Log("Reset the PickupTransform of " + attachedHand.name + " because of EndInteraction of the other hand");
-			}
+
+                // DA addition: reset velocity when one hand releases on a two handed interaction
+                // This improves behaviour on object shooting when releasing during hand scaling
+                ResetVelocityHistory();
+            }
         }
 
         public override void HoveringUpdate(NVRHand hand, float forTime)
