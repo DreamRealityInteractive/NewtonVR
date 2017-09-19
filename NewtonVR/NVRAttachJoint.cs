@@ -19,6 +19,7 @@ namespace NewtonVR
 
         public bool MatchRotation = true;
 		public bool IsTryingToAttach = false;
+		public NVRInteractableItem TryingToAttachItem;
 
         public bool JointCanAttach {
             get { return CanAttach; }
@@ -49,6 +50,7 @@ namespace NewtonVR
                     }
 
 					IsTryingToAttach = true;
+					TryingToAttachItem = col.gameObject.GetComponentInParent<NVRInteractableItem> ();
                 }
             }
         }
@@ -56,6 +58,7 @@ namespace NewtonVR
 		protected virtual void OnTriggerExit(Collider col)
 		{
 			IsTryingToAttach = false;
+			TryingToAttachItem = null;
 		}
 
         protected virtual void FixedUpdate()
@@ -98,6 +101,7 @@ namespace NewtonVR
             AttachedItem = null;
             AttachedPoint = null;
 			IsTryingToAttach = false;
+			TryingToAttachItem = null;
         }
 	
     }
