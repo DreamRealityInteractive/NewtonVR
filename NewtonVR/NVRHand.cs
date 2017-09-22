@@ -158,6 +158,7 @@ namespace NewtonVR
                 }
             }
         }
+
         public Vector3 CurrentPosition
         {
             get
@@ -173,7 +174,11 @@ namespace NewtonVR
             }
         }
 
-
+		public bool AreHandsOpaque
+		{
+			get { return (m_handController != null && m_handController.AreHandsOpaque); }
+		}
+			
         public virtual void PreInitialize(NVRPlayer player)
         {
             Player = player;
