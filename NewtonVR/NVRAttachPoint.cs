@@ -45,8 +45,8 @@ namespace NewtonVR
             Rigidbody = Item.Rigidbody;
 
 			// In case of collider not existing in the same entity, then allow user to assign one for this attach point
-			Collider thisCollider = (ThisCollider != null) ? ThisCollider: this.GetComponent<Collider>();
-			AttachPointMapper.Register(thisCollider, this);
+			ThisCollider = (ThisCollider != null) ? ThisCollider: this.GetComponent<Collider>();
+			AttachPointMapper.Register(ThisCollider, this);
         }
 
         private NVRInteractableItem FindNVRItem(GameObject gameobject)
@@ -130,5 +130,22 @@ namespace NewtonVR
                 }
             }
         }
+
+		public void DeregisterCollider()
+		{
+			if(ThisCollider)
+			{
+				AttachPointMapper.Deregister(ThisCollider);
+			}
+		}
+
+		public void RegisterNewCollider(Collider newCollider)
+		{
+			if(newCollider)
+			{
+				ThisCollider = newCollider;
+				AttachPointMapper.Register(ThisCollider, this);
+			}
+		}
     }
 }

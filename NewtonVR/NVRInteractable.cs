@@ -78,6 +78,12 @@ namespace NewtonVR
             NVRInteractables.Register(this, Colliders);
         }
 
+		public virtual void UpdateColliders(Collider[] newColliders)
+		{
+			Colliders = newColliders;
+			NVRInteractables.Register(this, Colliders);
+		}
+
         protected virtual bool CheckForDrop()
         {
 
@@ -209,5 +215,10 @@ namespace NewtonVR
             ForceDetach();
             NVRInteractables.Deregister(this);
         }
+
+		public void Deregister()
+		{
+			NVRInteractables.Deregister(this);
+		}
     }
 }

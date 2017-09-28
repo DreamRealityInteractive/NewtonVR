@@ -348,7 +348,7 @@ namespace NewtonVR
 				NVRHand attachedHand = AttachedHands[0];
 				PickupTransforms[attachedHand].position = this.transform.position;
 				PickupTransforms[attachedHand].rotation = this.transform.rotation;
-				Debug.Log("Reset the PickupTransform of " + attachedHand.name + " because of EndInteraction of the other hand");
+				//Debug.Log("Reset the PickupTransform of " + attachedHand.name + " because of EndInteraction of the other hand");
 
                 // DA addition: reset velocity when one hand releases on a two handed interaction
                 // This improves behaviour on object shooting when releasing during hand scaling
