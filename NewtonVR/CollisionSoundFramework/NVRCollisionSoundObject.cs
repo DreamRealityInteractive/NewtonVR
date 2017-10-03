@@ -10,8 +10,15 @@ namespace NewtonVR
 
         public NVRCollisionSoundMaterials Material;
 
-        private Collider[] Colliders;
+		[Tooltip("Sound used when the object is scaled below this threshold")]
+		public float m_smallScaleThreshold;
+		public NVRCollisionSoundMaterials m_smallScaleMaterial;
 
+		[Tooltip("Sound used when the object is scaled above this threshold")]
+		public float m_largeScaleThreshold;
+		public NVRCollisionSoundMaterials m_largeScaleMaterial;
+
+        private Collider[] Colliders;
 
         protected virtual void Awake()
         {
@@ -40,6 +47,9 @@ namespace NewtonVR
             {
                 NVRCollisionSoundObject collisionSoundObject = SoundObjects[collider];
 
+				float thisScale = transform.localScale.x;
+				float otherScale = collision.gameObject.transform.localScale.x;
+
                 float volume = CalculateImpactVolume(collision);
                 if (volume < NVRCollisionSoundController.Instance.MinCollisionVolume)
                 {
@@ -47,8 +57,25 @@ namespace NewtonVR
                     return;
                 }
 
-                NVRCollisionSoundController.Play(this.Material, collision.contacts[0].point, volume);
-                NVRCollisionSoundController.Play(collisionSoundObject.Material, collision.contacts[0].point, volume);
+				// Play this object's collision sound, depending on scale if so configured
+				NVRCollisionSoundMaterials thisMat = Material;
+
+				if (m_smallScaleThreshold != 0.0f && thisScale < m_smallScaleThreshold)
+					thisMat = m_smallScaleMaterial;
+				else if (m_largeScaleThreshold != 0.0f && thisScale > m_largeScaleThreshold)
+					thisMat = m_largeScaleMaterial;
+
+				NVRCollisionSoundController.Play(thisMat, collision.contacts[0].point, volume);
+
+				// Play other object's collision sound
+				NVRCollisionSoundMaterials otherMat = collisionSoundObject.Material;
+
+				if (collisionSoundObject.m_smallScaleThreshold != 0.0f && otherScale < collisionSoundObject.m_smallScaleThreshold)
+					otherMat = collisionSoundObject.m_smallScaleMaterial;
+				else if (collisionSoundObject.m_largeScaleThreshold != 0.0f && otherScale > collisionSoundObject.m_largeScaleThreshold)
+					otherMat = collisionSoundObject.m_largeScaleMaterial;
+			
+				NVRCollisionSoundController.Play(otherMat, collision.contacts[0].point, volume);
             }
         }
 
