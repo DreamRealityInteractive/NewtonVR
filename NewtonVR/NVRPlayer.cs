@@ -368,6 +368,27 @@ namespace NewtonVR
             }
         }
 
+        // Set the near or far clipping plane of all NVR Player children with camera component
+        public void ChangeCameraClippingPlane(bool isFarPlane, float newClipValue)
+        {
+            Camera[] cameras = GetComponentsInChildren<Camera>();
+
+            if (isFarPlane)
+            {
+                foreach(Camera cam in cameras)
+                {
+                    cam.farClipPlane = newClipValue;
+                }
+            }
+            else
+            {
+                foreach (Camera cam in cameras)
+                {
+                    cam.nearClipPlane = newClipValue;
+                }
+            }
+        }
+
         private void OnDestroy()
         {
             Instances.Remove(this);
