@@ -56,8 +56,12 @@ namespace NewtonVR
 			{
 				return Input.GetKeyDown(KeyCode.Escape);
 			}
+			else if(button == NVRButtons.Touchpad)
+			{
+				return OVRInput.GetDown (OVRInput.Button.PrimaryTouchpad);
+			}
 
-			return (button == NVRButtons.Touchpad) ? Input.GetMouseButtonDown(0): OVRInput.GetDown(GetButtonMap(button));
+			return OVRInput.GetDown(GetButtonMap(button));
         }
 
         public override bool GetPressUp(NVRButtons button)
@@ -66,6 +70,10 @@ namespace NewtonVR
 			if(button == NVRButtons.Y || button == NVRButtons.B) 
 			{
 				return Input.GetKeyUp(KeyCode.Escape);
+			}
+			else if(button == NVRButtons.Touchpad)
+			{
+				return OVRInput.GetUp (OVRInput.Button.PrimaryTouchpad);
 			}
 
             return OVRInput.GetUp(GetButtonMap(button));
@@ -77,6 +85,10 @@ namespace NewtonVR
 			if(button == NVRButtons.Y || button == NVRButtons.B) 
 			{
 				return Input.GetKey(KeyCode.Escape);
+			}
+			else if(button == NVRButtons.Touchpad)
+			{
+				return OVRInput.Get (OVRInput.Button.PrimaryTouchpad);
 			}
 			
             return OVRInput.Get(GetButtonMap(button));
