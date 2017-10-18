@@ -346,6 +346,18 @@ namespace NewtonVR
             {
                 handColliders[i].enabled = !_useRemote;
             }
+
+			if(_useRemote)
+			{
+				Animator[] allAnimators = GetComponentsInChildren<Animator>();
+				if(allAnimators.Length > 0)
+				{
+					foreach(var item in allAnimators)
+					{
+						item.enabled = false;
+					}
+				}
+			}
         }
 
         protected void UpdateHovering()
