@@ -29,7 +29,6 @@ namespace NewtonVR
 		public bool DaydreamSDKEnabled = false;
 
         public InterationStyle InteractionStyle;
-		public InterationStyle MobileInteractionStyle = InterationStyle.ByScript;
         public bool PhysicalHands = true;
         public bool MakeControllerInvisibleOnInteraction = false;
         public bool AutomaticallySetControllerTransparency = true;
