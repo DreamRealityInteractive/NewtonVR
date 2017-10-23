@@ -714,21 +714,9 @@ namespace NewtonVR
 				//Debug.Log ("Begin Interaction " + interactable.name + " hand " + this.name);
 
 				// Disable retrieval system if object is held in hand
-				HTW.HTWExaminationObject obj = interactable.gameObject.GetComponent<HTW.HTWExaminationObject> ();
+				HTW.HTWExaminationObject obj = interactable.gameObject.GetComponentInParent<HTW.HTWExaminationObject> ();
                 HTW.HTWQuizBlock block = interactable.gameObject.GetComponent<HTW.HTWQuizBlock>();
 				HTW.HTWDestructibleObjectPiece singlePiece = interactable.gameObject.GetComponentInParent<HTW.HTWDestructibleObjectPiece>();
-
-				if(singlePiece != null)
-				{
-					singlePiece.PieceCanBeRetrieved = false;
-				}
-                else if (obj != null) {
-					obj.SpecimenCanBeRetrieved = false;
-				}
-                else if (block != null)
-                {
-                    block.QuizBlockCanBeRetrieved = false;
-                }
 
                 if (interactable.AttachedHand != null)
                 {
@@ -736,6 +724,23 @@ namespace NewtonVR
                     {
                         interactable.AttachedHand.EndInteraction(null);
                     }
+                }
+
+                // DA: move can be retrieved adjustments to after Ending Interaction with previous hand if not two handed allowed
+				if(singlePiece != null)
+				{
+                    singlePiece.PieceCanBeRetrieved = false;
+                    if (obj != null)
+                    {
+                        obj.SpecimenCanBeRetrieved = false;
+                    }
+                }
+                else if (obj != null) {
+                    obj.SpecimenCanBeRetrieved = false;
+				}
+                else if (block != null)
+                {
+                    block.QuizBlockCanBeRetrieved = false;
                 }
 
                 CurrentlyInteracting = interactable;
@@ -763,20 +768,35 @@ namespace NewtonVR
 				//Debug.Log ("End Interaction " + this.gameObject.name + " item " + CurrentlyInteracting.name);
 
 				// Enable retrieval system when object is released from hand
-				HTW.HTWExaminationObject obj = CurrentlyInteracting.gameObject.GetComponent<HTW.HTWExaminationObject> ();
+				HTW.HTWExaminationObject obj = CurrentlyInteracting.gameObject.GetComponentInParent<HTW.HTWExaminationObject> ();
                 HTW.HTWQuizBlock block = CurrentlyInteracting.gameObject.GetComponent<HTW.HTWQuizBlock>();
 				HTW.HTWDestructibleObjectPiece singlePiece = CurrentlyInteracting.gameObject.GetComponentInParent<HTW.HTWDestructibleObjectPiece>();
 
-				if(singlePiece != null)
-				{
-					singlePiece.PieceCanBeRetrieved = true;
-				}
-				else if (obj != null) {
-					obj.SpecimenCanBeRetrieved = true;
-				}
-                else if (block != null)
+                // DA: check interactable item for two handed interactions to prevent retrieval from pulling object out of hand
+                NVRInteractableItem interactable = CurrentlyInteracting.gameObject.GetComponent<NVRInteractableItem>();
+
+                // Allow item to be retrieved only if the last hand releases the item
+                if (interactable.AttachedHands.Count <= 1)
                 {
-                    block.QuizBlockCanBeRetrieved = true;
+                    //Debug.Log("Attached Hands Count during EndInteraction before ending current hand: " + interactable.AttachedHands.Count + " hand: " + interactable.AttachedHands[0].name);
+
+                    if (singlePiece != null)
+                    {
+                        singlePiece.PieceCanBeRetrieved = true;
+
+                        if (obj != null)
+                        {
+                            obj.SpecimenCanBeRetrieved = true;
+                        }
+                    }
+                    else if (obj != null)
+                    {
+                        obj.SpecimenCanBeRetrieved = true;
+                    }
+                    else if (block != null)
+                    {
+                        block.QuizBlockCanBeRetrieved = true;
+                    }
                 }
                 									  
                 CurrentlyInteracting.EndInteraction(this);
