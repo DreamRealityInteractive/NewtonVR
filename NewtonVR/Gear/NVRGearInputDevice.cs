@@ -58,7 +58,11 @@ namespace NewtonVR
 			}
 			else if(button == NVRButtons.Touchpad)
 			{
+#if UNITY_EDITOR
+				return Input.GetMouseButtonDown(0);
+#else
 				return OVRInput.GetDown (OVRInput.Button.PrimaryTouchpad);
+#endif
 			}
 
 			return OVRInput.GetDown(GetButtonMap(button));
