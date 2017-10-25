@@ -4,7 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-//testing addition
+
 namespace NewtonVR
 {
     public class NVRHand : MonoBehaviour
@@ -82,6 +82,29 @@ namespace NewtonVR
         public NVRInteractableEvent OnBeginInteraction = new NVRInteractableEvent();
         public NVRInteractableEvent OnEndInteraction = new NVRInteractableEvent();
 
+        //////// DA: add extra event callbacks for custom hands ////////
+        public NVRInteractableEvent OnBeginInteractionCustomHands = new NVRInteractableEvent();
+        public NVRInteractableEvent OnEndInteractionCustomHands = new NVRInteractableEvent();
+
+        [Serializable]
+        public class NVRCanInteractEvent : UnityEvent<bool> { }
+
+        public NVRCanInteractEvent OnChangeCanInteract = new NVRCanInteractEvent();
+
+        [Serializable]
+        public class NVRIsHoveringEvent : UnityEvent<bool> { }
+
+        public NVRIsHoveringEvent OnChangeIsHovering = new NVRIsHoveringEvent();
+
+        [Serializable]
+        public class NVRIsGrabbingEvent : UnityEvent<bool> { }
+
+        public NVRIsGrabbingEvent OnChangeIsGrabbing = new NVRIsGrabbingEvent();
+
+        public UnityEvent OnUnfreezeHand = new UnityEvent();
+
+        //////// END added event callbacks for custom hands ////////
+
         private int EstimationSampleIndex;
         private Vector3[] LastPositions;
         private Quaternion[] LastRotations;
@@ -99,11 +122,7 @@ namespace NewtonVR
 
         private GameObject RenderModel;
 
-        private HTW.HTWHandController       m_handController;
-        private HTW.HTWChildCollision []    m_handColliders;
-        //private Material                    m_handMaterial;
-        //private Texture                     m_handTexture;
-        //private Color                       m_handAmbientColor;
+        private bool m_wasHovering = false;     //DA: add to stop ishovering callbacks from triggering every frame, trigger only when change occurs
 
         public NVRInputDevice CurrentInputDevice
 		{
@@ -117,6 +136,12 @@ namespace NewtonVR
             {
                 return CurrentlyHoveringOver.Any(kvp => kvp.Value.Count > 0);
             }
+        }
+
+        public bool WasHovering
+        {
+            get { return m_wasHovering; }
+            set { m_wasHovering = value; }
         }
         public bool IsInteracting
         {
@@ -173,11 +198,6 @@ namespace NewtonVR
                 }
             }
         }
-
-		public bool AreHandsOpaque
-		{
-			get { return (m_handController != null && m_handController.AreHandsOpaque); }
-		}
 			
         public virtual void PreInitialize(NVRPlayer player)
         {
@@ -295,21 +315,11 @@ namespace NewtonVR
             InputDevice.Initialize(this);
             InitializeRenderModel();
 
-            //m_leftHandController = Player.LeftHand.GetComponentInChildren<HTW.HTWHandController>();
-            //m_rightHandController = Player.RightHand.GetComponentInChildren<HTW.HTWHandController>();
-
-
-            //m_handController = gameObject.GetComponentInChildren<HTW.HTWHandController>();
-
             //UpdateOculusController();
         }
 
         protected virtual void Update()
         {
-        //    this.transform.position += this.transform.right / 16f;
-        //    this.transform.position -= this.transform.forward / 8f;
-      //      this.transform.position -= this.transform.up / 32f;
-
             if (CurrentHandState == HandState.Uninitialized)
             {
                 if (InputDevice == null || InputDevice.ReadyToInitialize() == false)
@@ -377,29 +387,18 @@ namespace NewtonVR
 
             if (InputDevice != null && IsInteracting == false && IsHovering == true)
             {
-                if (Player.VibrateOnHover == true)
+                if (Player.VibrateOnHover == true && WasHovering == false)
                 {
-
-                    if (m_handController)
-                    {
-                        if (m_handController.CanInteract)
-                        {
-                            m_handController.setIsHovering(true);
-                            InputDevice.TriggerHapticPulse(100);
-                        }
-                    }
-                    else
-                    {
-                        InputDevice.TriggerHapticPulse(100);
-                    }
+                    WasHovering = true;
+                    // Implemented hand controller should subscribe to this event and implement appropriate functionality
+                    OnChangeIsHovering.Invoke(true);
                 }
             }
-            else
+            else if (IsHovering == false && WasHovering == true)
             {
-                if (m_handController)
-                {
-                    m_handController.setIsHovering(false);
-                }
+                WasHovering = false;
+                // Implemented hand controller should subscribe to this event and implement appropriate functionality
+                OnChangeIsHovering.Invoke(false);
             }
         }
 
@@ -417,29 +416,27 @@ namespace NewtonVR
         {
 			if(!AbleToInteract)
 			{
-                // If hands can not interact but game menu is not active, allow hands to grip when triggers are pulled
-                if (m_handController != null && !m_handController.MenuFrozeHands)
+                if (CurrentInteractionStyle == InterationStyle.Hold)
                 {
-                    if (CurrentInteractionStyle == InterationStyle.Hold)
+                    bool isHoldButtonUp = (HoldButtonUp && !SecondHoldButtonPressed);
+                    bool isSecondHoldButtonUp = (SecondHoldButtonUp && !HoldButtonPressed);
+                    bool isUsingTwoButtonsUp = UseTwoButtonsToHold && (isHoldButtonUp || isSecondHoldButtonUp);
+                    bool isUsingSingleButtonUp = !UseTwoButtonsToHold && HoldButtonUp;
+
+                    if (isUsingSingleButtonUp || isUsingTwoButtonsUp)
                     {
-                        bool isHoldButtonUp = (HoldButtonUp && !SecondHoldButtonPressed);
-                        bool isSecondHoldButtonUp = (SecondHoldButtonUp && !HoldButtonPressed);
-                        bool isUsingTwoButtonsUp = UseTwoButtonsToHold && (isHoldButtonUp || isSecondHoldButtonUp);
-                        bool isUsingSingleButtonUp = !UseTwoButtonsToHold && HoldButtonUp;
-
-                        if (isUsingSingleButtonUp || isUsingTwoButtonsUp)
-                        {
-                            m_handController.setIsGrabbing(false);
-                        }
+                        // Implemented hand controller should subscribe to this event and implement appropriate functionality
+                        OnChangeIsGrabbing.Invoke(false);
                     }
+                }
 
-                    bool isUsingSingleButtonDown = !UseTwoButtonsToHold && HoldButtonDown;
-                    bool isUsingTwoButtonsDown = UseTwoButtonsToHold && (HoldButtonDown || SecondHoldButtonDown);
+                bool isUsingSingleButtonDown = !UseTwoButtonsToHold && HoldButtonDown;
+                bool isUsingTwoButtonsDown = UseTwoButtonsToHold && (HoldButtonDown || SecondHoldButtonDown);
 
-                    if (isUsingSingleButtonDown || isUsingTwoButtonsDown)
-                    {
-                        m_handController.setIsGrabbing(true);
-                    }
+                if (isUsingSingleButtonDown || isUsingTwoButtonsDown)
+                {
+                    // Implemented hand controller should subscribe to this event and implement appropriate functionality
+                    OnChangeIsGrabbing.Invoke(true);
                 }
                 return;
 			}
@@ -456,18 +453,9 @@ namespace NewtonVR
                 {
                     VisibilityLocked = false;
 
-					if (m_handController != null)
-					{
-						m_handController.setIsGrabbing (false);
-					}
-
-					if(m_handColliders != null)
-					{
-                    	foreach (HTW.HTWChildCollision col in m_handColliders)
-                    	{
-                    	    col.unfreezeHand();
-                    	}
-					}
+                    // Implemented hand controller should subscribe to this event and implement appropriate functionality
+                    OnChangeIsGrabbing.Invoke(false);
+                    OnUnfreezeHand.Invoke();
                 }
 
 				bool isUsingSingleButtonDown = !UseTwoButtonsToHold && HoldButtonDown;
@@ -475,10 +463,8 @@ namespace NewtonVR
 
 				if (isUsingSingleButtonDown || isUsingTwoButtonsDown)
                 {
-					if (m_handController != null)
-					{
-						m_handController.setIsGrabbing (true);
-					}
+                    // Implemented hand controller should subscribe to this event and implement appropriate functionality
+                    OnChangeIsGrabbing.Invoke(true);
 
                     if (CurrentlyInteracting == null)
                     {
@@ -723,42 +709,13 @@ namespace NewtonVR
         {
             if (interactable.CanAttach == true)
             {
-				//Debug.Log ("Begin Interaction " + interactable.name + " hand " + this.name);
-
-				// Disable retrieval system if object is held in hand
-				HTW.HTWExaminationObject obj = interactable.gameObject.GetComponentInParent<HTW.HTWExaminationObject> ();
-                HTW.HTWQuizBlock block = interactable.gameObject.GetComponent<HTW.HTWQuizBlock>();
-				HTW.HTWDestructibleObjectPiece singlePiece = interactable.gameObject.GetComponentInParent<HTW.HTWDestructibleObjectPiece>();
-
-                if (interactable.AttachedHand != null)
-                {
-                    if (interactable.AllowTwoHanded == false)
-                    {
-                        interactable.AttachedHand.EndInteraction(null);
-                    }
-                }
-
-                // DA: move can be retrieved adjustments to after Ending Interaction with previous hand if not two handed allowed
-				if(singlePiece != null)
-				{
-                    singlePiece.PieceCanBeRetrieved = false;
-                    if (obj != null)
-                    {
-                        obj.SpecimenCanBeRetrieved = false;
-                    }
-                }
-                else if (obj != null) {
-                    obj.SpecimenCanBeRetrieved = false;
-				}
-                else if (block != null)
-                {
-                    block.QuizBlockCanBeRetrieved = false;
-                }
+                // Implemented hand controller should subscribe to this event and implement appropriate functionality
+                OnBeginInteractionCustomHands.Invoke(interactable);
 
                 CurrentlyInteracting = interactable;
                 CurrentlyInteracting.BeginInteraction(this);
 
-				if (PhysicalController && PhysicalController.hasCustomPhysicalHandController())
+				if (PhysicalController)
                 {
                     PhysicalController.On();        // enable animation with Phyiscal Hand component during interaction
                 }
@@ -777,40 +734,9 @@ namespace NewtonVR
 
             if (CurrentlyInteracting != null)
             {
-				//Debug.Log ("End Interaction " + this.gameObject.name + " item " + CurrentlyInteracting.name);
-
-				// Enable retrieval system when object is released from hand
-				HTW.HTWExaminationObject obj = CurrentlyInteracting.gameObject.GetComponentInParent<HTW.HTWExaminationObject> ();
-                HTW.HTWQuizBlock block = CurrentlyInteracting.gameObject.GetComponent<HTW.HTWQuizBlock>();
-				HTW.HTWDestructibleObjectPiece singlePiece = CurrentlyInteracting.gameObject.GetComponentInParent<HTW.HTWDestructibleObjectPiece>();
-
-                // DA: check interactable item for two handed interactions to prevent retrieval from pulling object out of hand
-                NVRInteractableItem interactable = CurrentlyInteracting.gameObject.GetComponent<NVRInteractableItem>();
-
-                // Allow item to be retrieved only if the last hand releases the item
-                if (interactable.AttachedHands.Count <= 1)
-                {
-                    //Debug.Log("Attached Hands Count during EndInteraction before ending current hand: " + interactable.AttachedHands.Count + " hand: " + interactable.AttachedHands[0].name);
-
-                    if (singlePiece != null)
-                    {
-                        singlePiece.PieceCanBeRetrieved = true;
-
-                        if (obj != null)
-                        {
-                            obj.SpecimenCanBeRetrieved = true;
-                        }
-                    }
-                    else if (obj != null)
-                    {
-                        obj.SpecimenCanBeRetrieved = true;
-                    }
-                    else if (block != null)
-                    {
-                        block.QuizBlockCanBeRetrieved = true;
-                    }
-                }
-                									  
+                // Implemented hand controller should subscribe to this event and implement appropriate functionality
+                OnEndInteractionCustomHands.Invoke(CurrentlyInteracting);
+               
                 CurrentlyInteracting.EndInteraction(this);
 
                 if (OnEndInteraction != null)
@@ -818,7 +744,7 @@ namespace NewtonVR
                     OnEndInteraction.Invoke(CurrentlyInteracting);
                 }
 
-				if (PhysicalController && PhysicalController.hasCustomPhysicalHandController())
+				if (PhysicalController)
                 {
                     PhysicalController.Off();       // disable Phyiscal Hand component after interaction
                 }
@@ -1039,12 +965,6 @@ namespace NewtonVR
             else
             {
                 colliders = RenderModel.GetComponentsInChildren<Collider>(); //note: these should be trigger colliders
-
-                m_handController = gameObject.GetComponentInChildren<HTW.HTWHandController>();
-                m_handColliders = gameObject.GetComponentsInChildren<HTW.HTWChildCollision>();
-                //m_handMaterial = m_handController.gameObject.GetComponentInChildren<Renderer>().material;
-                //m_handTexture = m_handMaterial.mainTexture;
-                //m_handAmbientColor = m_handMaterial.color;
             }
 
             Player.RegisterHand(this);
@@ -1109,29 +1029,9 @@ namespace NewtonVR
             PhysicalController.Off();
         }
 
-        public void SetOpaque()
+        public void SetOpaque(bool areOpaque)
         {
-            if (m_handController != null)
-            {
-                m_handController.SetOpaque(true);
-
-                //NVRHelpers.SetOpaque(m_handController.gameObject.GetComponentInChildren<Renderer>().material);
-                //m_handMaterial.color = m_handAmbientColor;
-                //m_handMaterial.mainTexture = m_handTexture;
-            }
-        }
-
-        public void SetTransparent()
-        {
-            if (m_handController != null)
-            {
-                m_handController.SetOpaque(false);
-
-                //Color transparentcolor = Color.white;
-                //transparentcolor.a = (float)VisibilityLevel.Ghost / 100f;
-
-                //NVRHelpers.SetTransparent(m_handController.gameObject.GetComponentInChildren<Renderer>().material, transparentcolor);
-            }
+            OnChangeCanInteract.Invoke(areOpaque);
         }
     }
 

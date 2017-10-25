@@ -26,16 +26,6 @@ namespace NewtonVR
         private Type[] KeepTypes = new Type[] {typeof(MeshFilter), typeof(Renderer), typeof(Transform), typeof(Rigidbody),
             typeof(Animator), typeof(HTW.HTWHandController)};
 
-        // Custom hand mesh and grabbing animation
-        private HTW.HTWHandController HandPhysicsAnimController;
-        private HTW.HTWHandController HandPhysicsColliderAnimController;
-        private HTW.HTWHandController HandAnimController;
-        private SkinnedMeshRenderer[] PhysicalControllerRenderers;
-        private SkinnedMeshRenderer HandMeshRenderer;
-        private Animator[] anims = {null, null, null};
-        private GameObject CustomColliderRoot;
-        private HTW.HTWChildCollision[] CustomChildrenColliders = { null, null, null, null, null};
-
         public void Initialize(NVRHand trackingHand, bool initialState)
         {
             Hand = trackingHand;
@@ -57,15 +47,6 @@ namespace NewtonVR
                     DestroyImmediate(components[componentIndex]);
                 }
             }
-
-            // Get references from script to toggle animation states, visibility, and physics
-            HandPhysicsAnimController = PhysicalController.GetComponentInChildren<HTW.HTWHandController>();
-            HandAnimController = Hand.GetComponentInChildren<HTW.HTWHandController>();
-            PhysicalControllerRenderers = PhysicalController.GetComponentsInChildren<SkinnedMeshRenderer>();
-            HandMeshRenderer = Hand.GetComponentInChildren<SkinnedMeshRenderer>();
-            anims[0] = PhysicalController.GetComponentInChildren<Animator>();
-            anims[1] = Hand.GetComponentInChildren<Animator>();
-
 
             PhysicalController.transform.parent = Hand.transform.parent;
             PhysicalController.transform.position = Hand.transform.position;
@@ -183,63 +164,16 @@ namespace NewtonVR
 
             State = true;
 
-            // If a custom hand was assigned in Editor
-            if (HandPhysicsAnimController)
-            {
-                // Turn on visibility of custom physics hand
-                for (int index = 0; index < PhysicalControllerRenderers.Length; index++)
-                {
-                    PhysicalControllerRenderers[index].enabled = true;
-                }
-                // Turn on grabbing animation
-                HandPhysicsAnimController.setIsGrabbing(true);
-                HandAnimController.setIsGrabbing(true);
-                HandMeshRenderer.enabled = false;
-                HandPhysicsColliderAnimController.setIsGrabbing(true);
-                // Turn on hand physics collisions
-                toggleTriggerCollider(false);
+            PhysicalController.SetActive(true);
 
-            }
-            else
-            {
-                PhysicalController.SetActive(true);
-             //   Debug.Log("Trigger ON, no PhysicsAnimControll");
-            }
         }
 
         public void Off()
         {
 
             State = false;
-
-            // If a custom hand was assigned in Editor
-            if (HandPhysicsAnimController)
-            {
-                // Turn off visibility of custom physics hand
-                for (int index = 0; index < PhysicalControllerRenderers.Length; index++)
-                {
-                    PhysicalControllerRenderers[index].enabled = false;
-                }
-
-                // Turn off grabbing animaiton, return to idle
-           //     Debug.Log("Trigger OFF");
-                HandPhysicsAnimController.setIsGrabbing(false);
-                HandAnimController.setIsGrabbing(false);
-                HandMeshRenderer.enabled = true;
-                HandPhysicsColliderAnimController.setIsGrabbing(false);
-                // Turn off hand physics collisions
-                toggleTriggerCollider(true);
-                // Set animation speed to 1 for each finger layer
-                foreach (HTW.HTWChildCollision col in CustomChildrenColliders)
-                {
-                    col.unfreezeHand();
-                }
-            }
-            else
-            {
-                PhysicalController.SetActive(false);
-            //    Debug.Log("Trigger OFF, no PhysicsAnimControll");
-            }
+            
+            PhysicalController.SetActive(false);
         }
 
         protected void SetupCustomModel()
@@ -269,20 +203,6 @@ namespace NewtonVR
                 customColliders.name = "CustomColliders";
                 customCollidersTransform = customColliders.transform;
 
-                // Reference for animating the colliders as mesh bones animate
-                HandPhysicsColliderAnimController = customColliders.GetComponentInChildren<HTW.HTWHandController>();
-                anims[2] = customColliders.GetComponentInChildren<Animator>();      // assign 3rd of 3 animators associated with respective hand
-                // pass animators to all children so they only animate corresponding hand
-                CustomChildrenColliders = customColliders.GetComponentsInChildren<HTW.HTWChildCollision>();
-                foreach (HTW.HTWChildCollision col in CustomChildrenColliders)
-                {
-                    // NO LONGER USING PHYSICAL HANDS OR MULTIPLE ANIMATORS -- TODO: REMOVE ALL REFERENCES TO ANIMATORS IN NVRPHYSICALCONTROLLER
-                   // col.setAnimators(anims);
-                }
-                // Reference for toggling customColliders on/off to avoid physics collision when hand is not grabbing
-                CustomColliderRoot = customColliders;
-                toggleTriggerCollider(true);
-
                 customCollidersTransform.parent = PhysicalController.transform;
                 customCollidersTransform.localPosition = Vector3.zero;
                 customCollidersTransform.localRotation = Quaternion.identity;
@@ -291,22 +211,5 @@ namespace NewtonVR
 
             Colliders = customCollidersTransform.GetComponentsInChildren<Collider>();
         }
-
-        public bool hasCustomPhysicalHandController()
-        {
-            return HandPhysicsAnimController;
-        }
-
-        // Toggles the isTrigger value of custom colliders
-        // input 'true' parameter with hand is not grabbing so custom collider is not effecting physics collisions
-        // input 'false' to enable physics collisions while the hand is grabbing
-        public void toggleTriggerCollider(bool isTrigger)
-        {
-            foreach(Collider col in CustomColliderRoot.GetComponentsInChildren<Collider>())
-            {
-                col.isTrigger = isTrigger;
-            }
-        }
-
     }
 }
