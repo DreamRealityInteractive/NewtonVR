@@ -18,7 +18,11 @@ namespace NewtonVR
 		public float m_largeScaleThreshold;
 		public NVRCollisionSoundMaterials m_largeScaleMaterial;
 
+        [Tooltip("Minimum interval between subsequent collision sounds")]
+        public float m_soundCooldown;
+
         private Collider[] Colliders;
+        private float m_cooldownTimer = 0.0f;
 
         protected virtual void Awake()
         {
@@ -27,6 +31,14 @@ namespace NewtonVR
             for (int index = 0; index < Colliders.Length; index++)
             {
                 SoundObjects[Colliders[index]] = this;
+            }
+        }
+
+        protected virtual void Update()
+        {
+            if (m_cooldownTimer > 0)
+            {
+                m_cooldownTimer -= Time.deltaTime;
             }
         }
 
@@ -42,6 +54,16 @@ namespace NewtonVR
 
         protected virtual void OnCollisionEnter(Collision collision)
         {
+            if (m_cooldownTimer > 0)
+            {
+                // Ignore sound
+                return;
+            }
+            else if (m_soundCooldown > 0)
+            {
+                // Start timer to prevent multiple sounds triggered in quick succession
+                m_cooldownTimer = m_soundCooldown;
+            }
             Collider collider = collision.collider;
             if (SoundObjects.ContainsKey(collider))
             {
