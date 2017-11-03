@@ -13,7 +13,7 @@ namespace NewtonVR
         private AudioSource[] AudioPool;
         private int CurrentPoolIndex;
 
-        private Dictionary<NVRCollisionSoundMaterials, List<AudioClip>> Clips;
+        private Dictionary<string, List<AudioClip>> Clips;
 
         public override void Awake()
         {
@@ -28,20 +28,19 @@ namespace NewtonVR
             }
 
             AudioClip[] clips = Resources.LoadAll<AudioClip>(CollisionSoundsPath);
-            Clips = new Dictionary<NVRCollisionSoundMaterials, List<AudioClip>>();
+            Clips = new Dictionary<string, List<AudioClip>>();
             for (int index = 0; index < clips.Length; index++)
             {
-                string name = clips[index].name;
-                int dividerIndex = name.IndexOf("__");
+                string materialName = clips[index].name;
+                int dividerIndex = materialName.IndexOf("__");
                 if (dividerIndex >= 0)
-                    name = name.Substring(0, dividerIndex);
+                    materialName = materialName.Substring(0, dividerIndex);
 
-                NVRCollisionSoundMaterials? material = NVRCollisionSoundMaterialsList.Parse(name);
-                if (material != null)
+                if (NVRCollisionSoundMaterialsList.MaterialKeys.Contains(materialName))
                 {
-                    if (Clips.ContainsKey(material.Value) == false || Clips[material.Value] == null)
-                        Clips[material.Value] = new List<AudioClip>();
-                    Clips[material.Value].Add(clips[index]);
+                    if (Clips.ContainsKey(materialName) == false || Clips[materialName] == null)
+                        Clips[materialName] = new List<AudioClip>();
+                    Clips[materialName].Add(clips[index]);
                 }
                 else
                 {
@@ -50,9 +49,9 @@ namespace NewtonVR
             }
         }
 
-        public override void Play(NVRCollisionSoundMaterials material, Vector3 position, float impactVolume)
+        public override void Play(string material, Vector3 position, float impactVolume)
         {
-            if (material == NVRCollisionSoundMaterials.none)
+			if (material.Equals(NVRCollisionSoundMaterialsList.EmptyMaterialName))
                 return;
 
             if (NVRCollisionSoundController.Instance.PitchModulationEnabled == true)
@@ -73,12 +72,12 @@ namespace NewtonVR
             }
         }
 
-        private AudioClip GetClip(NVRCollisionSoundMaterials material)
+        private AudioClip GetClip(string material)
         { 
             if (Clips.ContainsKey(material) == false)
             {
-                material = NVRCollisionSoundMaterials._default;
-                Debug.LogError("[NewtonVR] CollisionSound: Trying to play sound for material without a clip. Need a clip at: " + CollisionSoundsPath + "/" + material.ToString());
+				material = NVRCollisionSoundMaterialsList.DefaultMaterial;
+                Debug.LogError("[NewtonVR] CollisionSound: Trying to play sound for material without a clip. Need a clip at: " + CollisionSoundsPath + "/" + material);
             }
 
             int index = Random.Range(0, Clips[material].Count);

@@ -86,7 +86,7 @@ namespace NewtonVR
         {
         }
 
-        public override void Play(NVRCollisionSoundMaterials material, Vector3 position, float impactVolume)
+        public override void Play(string material, Vector3 position, float impactVolume)
         {
             return;
         }

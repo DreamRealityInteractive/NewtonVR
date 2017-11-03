@@ -36,7 +36,7 @@ namespace NewtonVR
             #endif
         }
 
-        public static void Play(NVRCollisionSoundMaterials material, Vector3 position, float impactVolume)
+        public static void Play(string material, Vector3 position, float impactVolume)
         {
             if (Provider != null)
                 Provider.Play(material, position, impactVolume);

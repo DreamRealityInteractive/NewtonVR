@@ -8,15 +8,15 @@ namespace NewtonVR
     {
         private static Dictionary<Collider, NVRCollisionSoundObject> SoundObjects = new Dictionary<Collider, NVRCollisionSoundObject>();
 
-        public NVRCollisionSoundMaterials Material;
+        public string m_material;
 
 		[Tooltip("Sound used when the object is scaled below this threshold")]
 		public float m_smallScaleThreshold;
-		public NVRCollisionSoundMaterials m_smallScaleMaterial;
+        public string m_smallScaleMaterial;
 
-		[Tooltip("Sound used when the object is scaled above this threshold")]
+        [Tooltip("Sound used when the object is scaled above this threshold")]
 		public float m_largeScaleThreshold;
-		public NVRCollisionSoundMaterials m_largeScaleMaterial;
+		public string m_largeScaleMaterial;
 
         [Tooltip("Minimum interval between subsequent collision sounds")]
         public float m_soundCooldown;
@@ -80,23 +80,31 @@ namespace NewtonVR
                 }
 
 				// Play this object's collision sound, depending on scale if so configured
-				NVRCollisionSoundMaterials thisMat = Material;
+				string thisMat = m_material;
 
 				if (m_smallScaleThreshold != 0.0f && thisScale < m_smallScaleThreshold)
 					thisMat = m_smallScaleMaterial;
 				else if (m_largeScaleThreshold != 0.0f && thisScale > m_largeScaleThreshold)
 					thisMat = m_largeScaleMaterial;
 
+				if (string.IsNullOrEmpty (thisMat))
+				{
+					thisMat = NVRCollisionSoundMaterialsList.DefaultMaterial;
+				}
 				NVRCollisionSoundController.Play(thisMat, collision.contacts[0].point, volume);
 
 				// Play other object's collision sound
-				NVRCollisionSoundMaterials otherMat = collisionSoundObject.Material;
+				string otherMat = collisionSoundObject.m_material;
 
 				if (collisionSoundObject.m_smallScaleThreshold != 0.0f && otherScale < collisionSoundObject.m_smallScaleThreshold)
 					otherMat = collisionSoundObject.m_smallScaleMaterial;
 				else if (collisionSoundObject.m_largeScaleThreshold != 0.0f && otherScale > collisionSoundObject.m_largeScaleThreshold)
 					otherMat = collisionSoundObject.m_largeScaleMaterial;
-			
+
+				if (string.IsNullOrEmpty (otherMat))
+				{
+					otherMat = NVRCollisionSoundMaterialsList.DefaultMaterial;
+				}
 				NVRCollisionSoundController.Play(otherMat, collision.contacts[0].point, volume);
             }
         }
