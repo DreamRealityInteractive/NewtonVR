@@ -72,8 +72,9 @@ public class NVRCollisionSoundObjectEditor : Editor {
         EditorGUILayout.PropertyField(soundCooldown);
 
 		if (GUI.changed) {
-			EditorUtility.SetDirty (target);
+			serializedObject.ApplyModifiedProperties();
 			if (!Application.isPlaying) {
+				EditorUtility.SetDirty (sObject);
 				UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty ();
 			}
 		}
