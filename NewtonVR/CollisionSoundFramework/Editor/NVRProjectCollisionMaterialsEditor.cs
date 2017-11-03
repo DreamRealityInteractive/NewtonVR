@@ -16,12 +16,18 @@ public class NVRProjectCollisionMaterialsEditor : Editor
 
     public override void OnInspectorGUI()
     {
+		GUILayout.Label ("Current folder path: " + sObject.m_currentDirectory);
+		if (GUILayout.Button ("Change Directory")) {
+			string path = EditorUtility.OpenFolderPanel("Select Collision Sounds Directory", "", "");
+			path = path.Substring (Application.dataPath.Length - 6);
+			sObject.m_currentDirectory = path;
+			EditorUtility.SetDirty(sObject);
+		}
 
-        if (GUILayout.Button("Rebuild From Current Directory"))
+        if (GUILayout.Button("Rebuild"))
         {
             
-            string path = AssetDatabase.GetAssetPath(sObject);
-            path = path.Substring(0, path.LastIndexOf("/"));
+			string path = sObject.m_currentDirectory;
             DirectoryInfo dir = new DirectoryInfo(path);
             DirectoryInfo[] info = dir.GetDirectories("surface - " + "*");
 			List<NVRCollisionMaterialDef> materials = new List<NVRCollisionMaterialDef>();

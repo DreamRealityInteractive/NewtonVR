@@ -11,6 +11,8 @@ public struct NVRCollisionMaterialDef{
 [CreateAssetMenu(fileName = "ProjectCollisionMaterials ", menuName = "ProjectCollisionMaterials", order = 1)]
 public class NVRProjectCollisionMaterials : ScriptableObject {
 	public NVRCollisionMaterialDef[] m_collisionMaterials;
+	[HideInInspector]
+	public string m_currentDirectory;
 
 	public string[] GetMaterialNames(){
 		string[] materials = new string[m_collisionMaterials.Length];
