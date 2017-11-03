@@ -29,10 +29,10 @@ namespace NewtonVR
                         "EndNewtonVRMaterials"
                     };
                     // Load User Specific Materials
-                    NVRProjectCollisionMaterials projectSpecificMaterials = Resources.Load <NVRProjectCollisionMaterials>("CollisionSounds/ProjectCollisionMaterials");
+                    NVRProjectCollisionMaterials projectSpecificMaterials = Resources.Load <NVRProjectCollisionMaterials>("ProjectCollisionMaterials");
                     if(projectSpecificMaterials != null)
                     {
-                        materialKeys.AddRange(projectSpecificMaterials.m_collisionMaterials);
+						materialKeys.AddRange(projectSpecificMaterials.GetMaterialNames());
                     }
                 }
 

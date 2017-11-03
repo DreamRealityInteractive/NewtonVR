@@ -21,6 +21,8 @@ namespace NewtonVR
         [Tooltip("Minimum interval between subsequent collision sounds")]
         public float m_soundCooldown;
 
+		public AudioClip[] importedClips;
+
         private Collider[] Colliders;
         private float m_cooldownTimer = 0.0f;
 

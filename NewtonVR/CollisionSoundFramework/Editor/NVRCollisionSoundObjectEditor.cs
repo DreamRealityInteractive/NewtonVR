@@ -72,6 +72,7 @@ public class NVRCollisionSoundObjectEditor : Editor {
         EditorGUILayout.PropertyField(soundCooldown);
 
 		if (GUI.changed) {
+			ReimportClips ();
 			serializedObject.ApplyModifiedProperties();
 			if (!Application.isPlaying) {
 				EditorUtility.SetDirty (sObject);
@@ -79,4 +80,33 @@ public class NVRCollisionSoundObjectEditor : Editor {
 			}
 		}
     }
+
+	public void ReimportClips(){
+		List<AudioClip> clips = new List<AudioClip> ();
+		NVRProjectCollisionMaterials projectSpecificMaterials = Resources.Load <NVRProjectCollisionMaterials>("ProjectCollisionMaterials");
+		if (projectSpecificMaterials != null) {
+			// Import main material audio files
+			AudioClip[] standardClips = projectSpecificMaterials.GetClipsForMaterial (sObject.m_material);
+			if (standardClips != null) {
+				clips.AddRange (standardClips);
+			}
+
+			// Import small material audio - skip import if already imported
+			if (sObject.m_smallScaleMaterial != sObject.m_material) {
+				AudioClip[] smallClips = projectSpecificMaterials.GetClipsForMaterial (sObject.m_smallScaleMaterial);
+				if (smallClips != null) {
+					clips.AddRange (smallClips);
+				}
+			}
+
+			// Import Large material audio - skip import if already imported
+			if (sObject.m_largeScaleMaterial != sObject.m_material && sObject.m_largeScaleMaterial != sObject.m_smallScaleMaterial) {
+				AudioClip[] largeClips = projectSpecificMaterials.GetClipsForMaterial (sObject.m_largeScaleMaterial);
+				if (largeClips != null) {
+					clips.AddRange (largeClips);
+				}
+			}
+		}
+		sObject.importedClips = clips.ToArray ();
+	}
 }

@@ -27,9 +27,20 @@ namespace NewtonVR
                 AudioPool[index].transform.parent = this.transform;
             }
 
-            AudioClip[] clips = Resources.LoadAll<AudioClip>(CollisionSoundsPath);
+			// Load Default sounds
+			List<AudioClip> clips = new List<AudioClip>();
+			clips.AddRange(Resources.LoadAll<AudioClip>(CollisionSoundsPath));
+
+			// Load Custom sounds
+			NVRCollisionSoundObject[] collisionSoundObjects = FindObjectsOfType<NVRCollisionSoundObject>();
+			foreach (NVRCollisionSoundObject soundObject in collisionSoundObjects) {
+				// Loop through obejcts and import clips (if they aren't already imported)
+				if(soundObject.importedClips != null && soundObject.importedClips.Length > 0 && !clips.Contains(soundObject.importedClips[0])){
+					clips.AddRange (soundObject.importedClips);
+				}
+			}
             Clips = new Dictionary<string, List<AudioClip>>();
-            for (int index = 0; index < clips.Length; index++)
+			for (int index = 0; index < clips.Count; index++)
             {
                 string materialName = clips[index].name;
                 int dividerIndex = materialName.IndexOf("__");
