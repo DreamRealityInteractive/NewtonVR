@@ -1029,9 +1029,9 @@ namespace NewtonVR
             PhysicalController.Off();
         }
 
-        public void SetOpaque(bool areOpaque)
+        public void SetInteractable(bool canInteract)
         {
-            OnChangeCanInteract.Invoke(areOpaque);
+            OnChangeCanInteract.Invoke(canInteract);
         }
     }
 
