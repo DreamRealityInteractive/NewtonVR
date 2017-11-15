@@ -54,25 +54,48 @@ namespace NewtonVR
             }
         }
 
-        protected virtual void OnCollisionEnter(Collision collision)
+        public void PlayCollisionAudio(Collision collision, float volume)
         {
             if (m_cooldownTimer > 0)
             {
                 // Ignore sound
                 return;
             }
-            else if (m_soundCooldown > 0)
+
+            float thisScale = transform.localScale.x;
+
+            // Play this object's collision sound, depending on scale if so configured
+            string thisMat = m_material;
+
+            if (m_smallScaleThreshold != 0.0f && thisScale < m_smallScaleThreshold)
+                thisMat = m_smallScaleMaterial;
+            else if (m_largeScaleThreshold != 0.0f && thisScale > m_largeScaleThreshold)
+                thisMat = m_largeScaleMaterial;
+
+            if (string.IsNullOrEmpty(thisMat))
+            {
+                thisMat = NVRCollisionSoundMaterialsList.DefaultMaterial;
+            }
+            
+            if (thisMat != NVRCollisionSoundMaterialsList.EmptyMaterialName)
+            {
+                //Debug.Log("Play " + thisMat + " " + gameObject.name);
+                NVRCollisionSoundController.Play(thisMat, collision.contacts[0].point, volume);
+            }
+            
+            if (m_soundCooldown > 0)
             {
                 // Start timer to prevent multiple sounds triggered in quick succession
                 m_cooldownTimer = m_soundCooldown;
             }
+        }
+
+        protected virtual void OnCollisionEnter(Collision collision)
+        {
             Collider collider = collision.collider;
             if (SoundObjects.ContainsKey(collider))
             {
                 NVRCollisionSoundObject collisionSoundObject = SoundObjects[collider];
-
-				float thisScale = transform.localScale.x;
-				float otherScale = collision.gameObject.transform.localScale.x;
 
                 float volume = CalculateImpactVolume(collision);
                 if (volume < NVRCollisionSoundController.Instance.MinCollisionVolume)
@@ -81,33 +104,10 @@ namespace NewtonVR
                     return;
                 }
 
-				// Play this object's collision sound, depending on scale if so configured
-				string thisMat = m_material;
-
-				if (m_smallScaleThreshold != 0.0f && thisScale < m_smallScaleThreshold)
-					thisMat = m_smallScaleMaterial;
-				else if (m_largeScaleThreshold != 0.0f && thisScale > m_largeScaleThreshold)
-					thisMat = m_largeScaleMaterial;
-
-				if (string.IsNullOrEmpty (thisMat))
-				{
-					thisMat = NVRCollisionSoundMaterialsList.DefaultMaterial;
-				}
-				NVRCollisionSoundController.Play(thisMat, collision.contacts[0].point, volume);
-
-				// Play other object's collision sound
-				string otherMat = collisionSoundObject.m_material;
-
-				if (collisionSoundObject.m_smallScaleThreshold != 0.0f && otherScale < collisionSoundObject.m_smallScaleThreshold)
-					otherMat = collisionSoundObject.m_smallScaleMaterial;
-				else if (collisionSoundObject.m_largeScaleThreshold != 0.0f && otherScale > collisionSoundObject.m_largeScaleThreshold)
-					otherMat = collisionSoundObject.m_largeScaleMaterial;
-
-				if (string.IsNullOrEmpty (otherMat))
-				{
-					otherMat = NVRCollisionSoundMaterialsList.DefaultMaterial;
-				}
-				NVRCollisionSoundController.Play(otherMat, collision.contacts[0].point, volume);
+                // Play this objects audio
+                PlayCollisionAudio(collision, volume);
+                // Play collided object audio
+                collisionSoundObject.PlayCollisionAudio(collision, volume);
             }
         }
 
