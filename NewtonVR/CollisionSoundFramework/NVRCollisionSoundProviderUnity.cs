@@ -55,7 +55,8 @@ namespace NewtonVR
                 }
                 else
                 {
-                    Debug.LogWarning("[NewtonVR] CollisionSound: Found clip for material that is not in enumeration (NVRCollisionSoundMaterials): " + clips[index].name);
+                    // Custom material found, add mateiral key
+                    NVRCollisionSoundMaterialsList.MaterialKeys.Add(materialName);
                 }
             }
         }
