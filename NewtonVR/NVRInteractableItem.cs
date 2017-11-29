@@ -71,10 +71,10 @@ namespace NewtonVR
 
             AddExternalVelocities();
         }
-	protected override void Update()
-	{
-		base.Update();
-	}
+	    protected override void Update()
+	    {
+		    base.Update();
+	    }
 
         protected virtual void GetTargetValues(out Vector3 targetHandPosition, out Quaternion targetHandRotation, out Vector3 targetItemPosition, out Quaternion targetItemRotation)
         {
@@ -148,6 +148,17 @@ namespace NewtonVR
                 targetItemPosition = cumulativeItemVector / AttachedHands.Count;
                 targetHandPosition = cumulativeHandVector / AttachedHands.Count;
             }
+        }
+
+        public void ForcePosition(Vector3 pos)
+        {
+            this.transform.position = pos;
+            foreach(NVRHand hand in AttachedHands)
+            {
+                PickupTransforms[hand].position = this.transform.position;
+            }
+            this.Rigidbody.velocity = Vector3.zero;
+            ResetVelocityHistory();
         }
 
         protected virtual void UpdateVelocities()
