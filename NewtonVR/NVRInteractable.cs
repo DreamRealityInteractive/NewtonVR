@@ -11,12 +11,10 @@ namespace NewtonVR
         public bool CanAttach = true;
 
         public bool AllowTwoHanded = false;
-        
-        public bool DisableKinematicOnAttach = true;
-        public bool EnableKinematicOnDetach = false;
-        public float DropDistance = 1;
 
-        public bool EnableGravityOnDetach = true;
+        public bool FreezeOnDetach = false;
+
+        public float DropDistance = 1;
 
         public List<NVRHand> AttachedHands = new List<NVRHand>();
         public NVRHand AttachedHand
@@ -123,14 +121,16 @@ namespace NewtonVR
         {
         }
 
+        public void SetFrozen(bool isFrozen)
+        {
+            Rigidbody.constraints = (isFrozen) ? RigidbodyConstraints.FreezeAll : RigidbodyConstraints.None;
+        }
+
         public virtual void BeginInteraction(NVRHand hand)
         {
             AttachedHands.Add(hand);
 
-            if (DisableKinematicOnAttach == true)
-            {
-                Rigidbody.isKinematic = false;
-            }
+            SetFrozen(false);
         }
 
         public virtual void InteractingUpdate(NVRHand hand)
@@ -173,14 +173,9 @@ namespace NewtonVR
             AttachedHands.Remove(hand);
             ClosestHeldPoint = Vector3.zero;
 
-            if (EnableKinematicOnDetach == true)
+            if (FreezeOnDetach == true)
             {
-                Rigidbody.isKinematic = true;
-            }
-
-            if (EnableGravityOnDetach == true)
-            {
-                Rigidbody.useGravity = true;
+                SetFrozen(true);
             }
         }
 

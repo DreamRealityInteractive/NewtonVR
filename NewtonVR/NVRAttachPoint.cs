@@ -82,17 +82,13 @@ namespace NewtonVR
         public virtual void Detached(NVRAttachJoint joint)
         {
             IsAttached = false;
-
-            if (Item.EnableGravityOnDetach == true)
-            {
-                Rigidbody.useGravity = true;
-            }
-
-			AttachedJoint = null;
+            Rigidbody.useGravity = true;
+            AttachedJoint = null;
         }
 
         public virtual void PullTowards(NVRAttachJoint joint)
         {
+            Item.SetFrozen(false);
             float velocityMagic = VelocityMagic / (Time.deltaTime / NVRPlayer.NewtonVRExpectedDeltaTime);
             float angularVelocityMagic = AngularVelocityMagic / (Time.deltaTime / NVRPlayer.NewtonVRExpectedDeltaTime);
 
