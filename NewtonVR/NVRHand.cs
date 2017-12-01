@@ -42,6 +42,7 @@ namespace NewtonVR
         public NVRButtons MenuButton2 = NVRButtons.B;
 		public NVRButtons MenuButton3 = NVRButtons.ApplicationMenu;
 		public bool MenuButtonDown { get { return Inputs[MenuButton1].PressDown || Inputs[MenuButton2].PressDown || Inputs[MenuButton3].PressDown; } }
+        public bool MenuButtonUp { get { return Inputs[MenuButton1].PressUp || Inputs[MenuButton2].PressUp || Inputs[MenuButton3].PressUp; } }
 
         [HideInInspector]
 		public bool AbleToInteract = true;
