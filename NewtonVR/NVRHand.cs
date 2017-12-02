@@ -135,7 +135,14 @@ namespace NewtonVR
         {
             get
             {
-                return CurrentlyHoveringOver.Any(kvp => kvp.Value.Count > 0);
+                var hoveringEnumerator = CurrentlyHoveringOver.GetEnumerator();
+                while (hoveringEnumerator.MoveNext())
+                {
+                    var kvp = hoveringEnumerator.Current;
+                    if (kvp.Value.Count > 0)
+                        return true;
+                }
+                return false;
             }
         }
 

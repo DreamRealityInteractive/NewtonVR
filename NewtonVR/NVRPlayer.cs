@@ -17,7 +17,14 @@ namespace NewtonVR
         {
             get
             {
-                return Instances.First(player => player != null && player.gameObject != null);
+                var playerEnumerator = Instances.GetEnumerator();
+                while (playerEnumerator.MoveNext())
+                {
+                    NVRPlayer player = playerEnumerator.Current;
+                    if (player != null && player.gameObject != null)
+                        return player;
+                }
+                return null;
             }
         }
 
