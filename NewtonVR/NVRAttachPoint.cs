@@ -64,6 +64,15 @@ namespace NewtonVR
 
         public virtual void Attached(NVRAttachJoint joint)
         {
+#if NVR_Daydream || NVR_Gear
+            Rigidbody.isKinematic = true;
+            Vector3 pointOffset = this.transform.position - joint.transform.position;
+            Item.transform.position = Item.transform.position - pointOffset;
+            if (joint.MatchRotation == true)
+            {
+                Item.transform.rotation = joint.transform.rotation;
+            }
+#else
             Vector3 targetPosition = joint.transform.position + (Item.transform.position - this.transform.position);
             Rigidbody.MovePosition(targetPosition);
             if (joint.MatchRotation == true)
@@ -73,7 +82,7 @@ namespace NewtonVR
 
             Rigidbody.velocity = Vector3.zero;
             Rigidbody.angularVelocity = Vector3.zero; 
-
+#endif
             IsAttached = true;
             Rigidbody.useGravity = false;
 
@@ -81,6 +90,9 @@ namespace NewtonVR
         }
         public virtual void Detached(NVRAttachJoint joint)
         {
+#if NVR_Daydream || NVR_Gear
+            Rigidbody.isKinematic = false;
+#endif
             IsAttached = false;
             Rigidbody.useGravity = true;
             AttachedJoint = null;
@@ -89,6 +101,16 @@ namespace NewtonVR
         public virtual void PullTowards(NVRAttachJoint joint)
         {
             Item.SetFrozen(false);
+#if NVR_Daydream || NVR_Gear
+            Rigidbody.isKinematic = true;
+            Vector3 pointOffset = this.transform.position - joint.transform.position;
+            Item.transform.position = Item.transform.position - pointOffset;
+            if (joint.MatchRotation == true)
+            {
+                Item.transform.rotation = joint.transform.rotation;
+            }
+
+#else
             float velocityMagic = VelocityMagic / (Time.deltaTime / NVRPlayer.NewtonVRExpectedDeltaTime);
             float angularVelocityMagic = AngularVelocityMagic / (Time.deltaTime / NVRPlayer.NewtonVRExpectedDeltaTime);
 
@@ -125,6 +147,7 @@ namespace NewtonVR
                     }
                 }
             }
+#endif
         }
 
 		public void DeregisterCollider()
