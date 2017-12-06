@@ -111,6 +111,10 @@ namespace NewtonVR
             }
 
 #else
+			//Preventing objects being pulled while hands are interacting
+			if (true==Item.IsAttached)
+				return;
+			
             float velocityMagic = VelocityMagic / (Time.deltaTime / NVRPlayer.NewtonVRExpectedDeltaTime);
             float angularVelocityMagic = AngularVelocityMagic / (Time.deltaTime / NVRPlayer.NewtonVRExpectedDeltaTime);
 
