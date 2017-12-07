@@ -121,10 +121,25 @@ namespace NewtonVR
         {
         }
 
+		protected virtual void OnCollisionEnter(Collision collision)
+		{
+			SetFrozenRotation (true);
+		}
+
+		protected virtual void OnCollisionExit(Collision collision)
+		{
+			SetFrozenRotation (false);
+		}
+
         public void SetFrozen(bool isFrozen)
         {
             Rigidbody.constraints = (isFrozen) ? RigidbodyConstraints.FreezeAll : RigidbodyConstraints.None;
         }
+
+		public void SetFrozenRotation(bool freezeRotation)
+		{
+			Rigidbody.constraints=true == freezeRotation?Rigidbody.constraints | RigidbodyConstraints.FreezeRotation:Rigidbody.constraints & (~RigidbodyConstraints.FreezeRotation);
+		}
 
         public virtual void BeginInteraction(NVRHand hand)
         {
