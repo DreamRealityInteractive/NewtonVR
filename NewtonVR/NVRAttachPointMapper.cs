@@ -13,7 +13,9 @@ namespace NewtonVR
 
         public static void Register(Collider col, NVRAttachPoint point)
         {
-            Colliders.Add(col, point);
+			Debug.Assert (false==Colliders.ContainsKey (col));
+			if (false==Colliders.ContainsKey (col))
+				Colliders.Add(col, point);
         }
 
         public static void Deregister(Collider col)
