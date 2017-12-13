@@ -97,7 +97,7 @@ namespace NewtonVR
 
                 // Set all layers to 1, then compare with & to change "RightEye" layer to 0 while keeping all others 1
                 // 1111 add 1101 get 1101
-                _leftEyeCamera.cullingMask = -1;
+                _leftEyeCamera.cullingMask = originalHead.GetComponent<Camera>().cullingMask;
                 _leftEyeCamera.cullingMask &= ~(1 << LayerMask.NameToLayer("RightEye"));
 
                 // Copy over image effect components from the main camera tagged with "ArtSetupCamera"
@@ -145,7 +145,7 @@ namespace NewtonVR
 
                 // Set all layers to 1, then compare with & to change "LeftEye" layer to 0 while keeping all others 1
                 // 1111 add 1101 get 1101
-                _rightEyeCamera.cullingMask = -1;
+                _rightEyeCamera.cullingMask = originalHead.GetComponent<Camera>().cullingMask;
                 _rightEyeCamera.cullingMask &= ~(1 << LayerMask.NameToLayer("LeftEye"));
                 _rightEyeCamera.tag = "MainCamera";
 
