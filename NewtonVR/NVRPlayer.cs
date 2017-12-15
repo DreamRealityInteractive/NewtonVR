@@ -17,6 +17,12 @@ namespace NewtonVR
         {
             get
             {
+				if (1 == Instances.Count) {
+					if (null != Instances [0] && null != Instances [0].gameObject)
+						return Instances [0];
+					return null;
+				}
+				//else fall through
                 var playerEnumerator = Instances.GetEnumerator();
                 while (playerEnumerator.MoveNext())
                 {
