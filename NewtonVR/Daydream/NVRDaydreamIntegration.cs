@@ -48,7 +48,7 @@ namespace NewtonVR
                 // Set all layers to 1, then compare with & to change "RightEye" layer to 0 while keeping all others 1
                 // 1111 add 1101 get 1101
                 camLeft.cullingMask = -1;
-                camRight.cullingMask &= ~(1 << 9);
+                camLeft.cullingMask &= ~(1 << 9);
                 camLeft.farClipPlane = 160f;
                 camLeft.nearClipPlane = 0.01f;
                 camLeft.allowHDR = true;
