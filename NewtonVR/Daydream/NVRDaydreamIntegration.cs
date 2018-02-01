@@ -34,7 +34,7 @@ namespace NewtonVR
             Camera camRight = headRight.AddComponent<Camera>();
             camRight.stereoTargetEye = StereoTargetEyeMask.Right;
             camRight.cullingMask = -1;
-            camRight.cullingMask &= ~(1 << LayerMask.NameToLayer("LeftEye"));
+            camRight.cullingMask &= ~(1 << 8);
             camRight.farClipPlane = 160f;
             camRight.nearClipPlane = 0.01f;
             camRight.allowHDR = true;
@@ -48,7 +48,7 @@ namespace NewtonVR
                 // Set all layers to 1, then compare with & to change "RightEye" layer to 0 while keeping all others 1
                 // 1111 add 1101 get 1101
                 camLeft.cullingMask = -1;
-                camLeft.cullingMask &= ~(1 << LayerMask.NameToLayer("RightEye"));
+                camLeft.cullingMask &= ~(1 << 9);
                 camLeft.farClipPlane = 160f;
                 camLeft.nearClipPlane = 0.01f;
                 camLeft.allowHDR = true;
