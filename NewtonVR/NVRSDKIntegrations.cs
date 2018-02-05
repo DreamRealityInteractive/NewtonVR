@@ -12,6 +12,7 @@ namespace NewtonVR
         SteamVR,
         Oculus,
 		Daydream,
-		Gear
+		Gear,
+        WindowsMixedReality
     }
 }

@@ -1,0 +1,183 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.XR;
+
+#if NVR_WMR
+namespace NewtonVR
+{
+    public class NVRWindowsMixedRealityIntegration : NVRIntegration
+    {
+
+        public override void Initialize(NVRPlayer player)
+        {
+            Player = player;
+            Player.gameObject.SetActive(false);
+
+            OVRManager manager = Player.gameObject.AddComponent<OVRManager>();
+            manager.trackingOriginType = OVRManager.TrackingOrigin.FloorLevel;
+
+            // User OVR rig for two camera, per eye setup
+            OVRCameraRig rig = Player.gameObject.AddComponent<OVRCameraRig>();
+            rig.usePerEyeCameras = true;
+
+            NVRHelpers.SetProperty(rig, "trackingSpace", Player.transform, true);
+            //NVRHelpers.SetProperty(rig, "leftHandAnchor", Player.LeftHand.transform, true);
+            //NVRHelpers.SetProperty(rig, "rightHandAnchor", Player.RightHand.transform, true);
+            NVRHelpers.SetProperty(rig, "centerEyeAnchor", Player.Head.transform, true);
+
+            Player.gameObject.SetActive(true);
+
+            // Initialize Left and Right eye cameras with components and values matching original head camera
+            // This allows image effects, scripts, etc. set up and tested on the main camera to copy
+            // over maintaining values to two camera setup
+
+            // Reference to the NVR Head game object with desired camera components and values
+            GameObject originalHead = Player.Head.gameObject;
+
+            // Reference to left and right eye cameras created by OVR rig setup 
+            Camera _leftEyeCamera = rig.leftEyeAnchor.GetComponent<Camera>();
+            Camera _rightEyeCamera = rig.rightEyeAnchor.GetComponent<Camera>();
+
+            if (originalHead != null)
+            {
+                ///////////////////// LEFT EYE CAMERA SETUP //////////////////////////////
+
+                // Adjust clipping and target eye for stereo camera
+                _leftEyeCamera.stereoTargetEye = StereoTargetEyeMask.Left;
+                _leftEyeCamera.farClipPlane = 160f;
+                _leftEyeCamera.nearClipPlane = 0.01f;
+
+                // Background color setup   //change to fix NewtonSubmodule link
+                //     _leftEyeCamera.clearFlags = CameraClearFlags.SolidColor;
+                //     _leftEyeCamera.backgroundColor = new Color(0.00f, 0.0f, 0.025f);
+
+                // Set all layers to 1, then compare with & to change "RightEye" layer to 0 while keeping all others 1
+                // 1111 add 1101 get 1101
+                _leftEyeCamera.cullingMask = originalHead.GetComponent<Camera>().cullingMask;
+                _leftEyeCamera.cullingMask &= ~(1 << LayerMask.NameToLayer("RightEye"));
+
+                // Copy over image effect components from the main camera tagged with "ArtSetupCamera"
+                // to each target eye camera with reflected component values
+                Component[] cameraComponents = originalHead.GetComponents(typeof(Component));
+
+                // Copy over each component from the head to the right eye
+                foreach (Component curComponent in cameraComponents)
+                {
+                    // Get component type
+                    System.Type type = curComponent.GetType();
+
+                    // Skip certain components ie left eye already has Camera 
+                    // component and scene only needs one AudioListener
+                    if (type != typeof(Camera) && type != typeof(Transform) &&
+                        type != typeof(AudioListener))
+                    {
+                        // Add component to right eye game object
+                        Component copy = rig.leftEyeAnchor.gameObject.AddComponent(type);
+                        // Save active status of component from head
+                        bool isActive = ((Behaviour)originalHead.GetComponent(type)).enabled;
+
+                        // Reflect all component values from head to right eye
+                        System.Reflection.FieldInfo[] fields = type.GetFields();
+                        foreach (System.Reflection.FieldInfo field in fields)
+                        {
+                            field.SetValue(copy, field.GetValue(curComponent));
+                        }
+
+                        // Set active status of right eye component from status of head
+                        ((Behaviour)rig.leftEyeAnchor.GetComponent(type)).enabled = isActive;
+                    }
+                }
+
+                ///////////////////// RIGHT EYE CAMERA SETUP //////////////////////////////
+
+                // Adjust clipping and target eye for stereo camera
+                _rightEyeCamera.stereoTargetEye = StereoTargetEyeMask.Right;
+                _rightEyeCamera.farClipPlane = 160f;
+                _rightEyeCamera.nearClipPlane = 0.01f;
+
+                // Background color setup
+                //     _rightEyeCamera.clearFlags = CameraClearFlags.SolidColor;
+                //     _rightEyeCamera.backgroundColor = new Color(0.00f, 0.0f, 0.025f);
+
+                // Set all layers to 1, then compare with & to change "LeftEye" layer to 0 while keeping all others 1
+                // 1111 add 1101 get 1101
+                _rightEyeCamera.cullingMask = originalHead.GetComponent<Camera>().cullingMask;
+                _rightEyeCamera.cullingMask &= ~(1 << LayerMask.NameToLayer("LeftEye"));
+                _rightEyeCamera.tag = "MainCamera";
+
+                // Copy over image effect components from the main camera tagged with "ArtSetupCamera"
+                // to each target eye camera with reflected component values
+                // Component[] cameraComponents = originalHead.GetComponents(typeof(Component));
+
+                // Copy over each component from the head to the right eye
+                foreach (Component curComponent in cameraComponents)
+                {
+                    // Get component type
+                    System.Type type = curComponent.GetType();
+
+                    // Skip certain components ie right eye already has Camera 
+                    // component and scene only needs one AudioListener
+                    if (type != typeof(Camera) && type != typeof(Transform) &&
+                        type != typeof(AudioListener))
+                    {
+                        // Add component to right eye game object
+                        Component copy = rig.rightEyeAnchor.gameObject.AddComponent(type);
+                        // Save active status of component from head
+                        bool isActive = ((Behaviour)originalHead.GetComponent(type)).enabled;
+
+                        // Reflect all component values from head to right eye
+                        System.Reflection.FieldInfo[] fields = type.GetFields();
+                        foreach (System.Reflection.FieldInfo field in fields)
+                        {
+                            field.SetValue(copy, field.GetValue(curComponent));
+                        }
+
+                        // Set active status of right eye component from status of head
+                        ((Behaviour)rig.rightEyeAnchor.GetComponent(type)).enabled = isActive;
+                    }
+                }
+            }
+        }
+
+        private Vector3 PlayspaceBounds = Vector3.zero;
+        public override Vector3 GetPlayspaceBounds()
+        {
+            return PlayspaceBounds;
+        }
+
+        public override bool IsHmdPresent()
+        {
+            if (Application.isPlaying == false) //try and enable vr if we're in the editor so we can get hmd present
+            {
+                if (UnityEngine.XR.XRSettings.enabled == false)
+                {
+                    UnityEngine.XR.XRSettings.enabled = true;
+                }
+            }
+
+            return XRDevice.isPresent;
+        }
+    }
+}
+#else
+namespace NewtonVR
+{
+    public class NVRWindowsMixedRealityIntegration : NVRIntegration
+    {
+        public override void Initialize(NVRPlayer player)
+        {
+        }
+
+        public override Vector3 GetPlayspaceBounds()
+        {
+            return Vector3.zero;
+        }
+
+        public override bool IsHmdPresent()
+        {
+            return false;
+        }
+    }
+}
+#endif

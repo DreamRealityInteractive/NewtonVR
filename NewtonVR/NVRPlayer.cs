@@ -159,12 +159,12 @@ namespace NewtonVR
 
 		public bool IsTetheredDevice()
 		{
-			return (CurrentIntegrationType == NVRSDKIntegrations.Oculus || CurrentIntegrationType == NVRSDKIntegrations.SteamVR);
+			return (CurrentIntegrationType == NVRSDKIntegrations.Oculus || CurrentIntegrationType == NVRSDKIntegrations.SteamVR || CurrentIntegrationType == NVRSDKIntegrations.WindowsMixedReality);
 		}
 
 		public bool AreHandsUsed()
 		{
-			if(CurrentIntegrationType == NVRSDKIntegrations.SteamVR)
+			if(CurrentIntegrationType == NVRSDKIntegrations.SteamVR || CurrentIntegrationType == NVRSDKIntegrations.WindowsMixedReality)
 			{
 				return true;
 			}
@@ -260,6 +260,10 @@ namespace NewtonVR
 			{
 				Integration = new NVRDaydreamIntegration();
 			}
+            else if(CurrentIntegrationType == NVRSDKIntegrations.WindowsMixedReality)
+            {
+                Integration = new NVRWindowsMixedRealityIntegration();
+            }
             else if (CurrentIntegrationType == NVRSDKIntegrations.FallbackNonVR)
             {
                 if (logOutput == true)
@@ -289,7 +293,7 @@ namespace NewtonVR
             {
                 resultLog += "Found VRDevice: " + UnityEngine.XR.XRDevice.model + ". ";
 
-#if !NVR_Oculus && !NVR_SteamVR && !NVR_Gear && !NVR_Daydream
+#if !NVR_Oculus && !NVR_SteamVR && !NVR_Gear && !NVR_Daydream && !NVR_WMR
                 string warning = "Neither SteamVR or Oculus SDK or Daydream SDK is enabled in the NVRPlayer. Please check the \"Enable SteamVR\" or \"Enable Oculus SDK\" checkbox in the NVRPlayer script in the NVRPlayer GameObject.";
                 Debug.LogWarning(warning);
 #endif
@@ -302,12 +306,20 @@ namespace NewtonVR
                 }
 #endif
 
+#if NVR_WMR
+		        if (currentIntegration == NVRSDKIntegrations.None)
+		        { 
+			        currentIntegration = NVRSDKIntegrations.WindowsMixedReality;
+			        resultLog += "Using Windows Mixed Reality";
+		        }
+#endif
+
 #if NVR_Gear
-		if (currentIntegration == NVRSDKIntegrations.None)
-		{ 
-			currentIntegration = NVRSDKIntegrations.Gear;
-			resultLog += "Using Gear/Oculus SDK";
-		}
+		        if (currentIntegration == NVRSDKIntegrations.None)
+		        { 
+			        currentIntegration = NVRSDKIntegrations.Gear;
+			        resultLog += "Using Gear/Oculus SDK";
+		        }
 #endif
 
 #if NVR_SteamVR
@@ -318,12 +330,12 @@ namespace NewtonVR
                 }
 #endif
 
-#if NVR_Daydream 
-		if (currentIntegration == NVRSDKIntegrations.None)
-		{ 
-			currentIntegration = NVRSDKIntegrations.Daydream;
-			resultLog += "Using DaydreamVR SDK";
-		}
+#if NVR_Daydream
+		        if (currentIntegration == NVRSDKIntegrations.None)
+		        { 
+			        currentIntegration = NVRSDKIntegrations.Daydream;
+			        resultLog += "Using DaydreamVR SDK";
+		        }
 #endif
             }
 
