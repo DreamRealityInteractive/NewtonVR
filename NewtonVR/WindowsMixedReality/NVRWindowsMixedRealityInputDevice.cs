@@ -14,20 +14,23 @@ namespace NewtonVR
     {
         private GameObject RenderModel;
 
+        private string controllerSourceKey;
+
         private XRNode Controller;
 
         private bool IsLeftHand;
 
-        //private OVRInput.Controller Controller;
+        private Dictionary<NVRButtons, float> ButtonStates = new Dictionary<NVRButtons, float>();
 
-        private Dictionary<NVRButtons, string> ButtonMapping = new Dictionary<NVRButtons, string>(new NVRButtonsComparer());
-        private Dictionary<NVRButtons, string> AxisMapping = new Dictionary<NVRButtons, string>(new NVRButtonsComparer());
+        private Vector3 lastTrackedPos;
+
+        private Quaternion lastTrackedRot;
+
+        private const float sensitivity = 0.1f;
 
         public override void Initialize(NVRHand hand)
         {
             base.Initialize(hand);
-
-            SetupButtonMapping();
 
             if (hand == Hand.Player.LeftHand)
             {
@@ -39,64 +42,166 @@ namespace NewtonVR
                 IsLeftHand = false;
                 Controller = XRNode.RightHand;
             }
+
+#if UNITY_WSA && UNITY_2017_2_OR_NEWER
+            foreach (var sourceState in InteractionManager.GetCurrentReading())
+            {
+                if (sourceState.source.kind == InteractionSourceKind.Controller && IsHandednessCorrect(sourceState.source.handedness))
+                {
+                    StartTrackingController(sourceState.source);
+                }
+            }
+
+            InteractionManager.InteractionSourceDetected += InteractionManager_InteractionSourceDetected;
+            InteractionManager.InteractionSourceLost += InteractionManager_InteractionSourceLost;
+#endif
+            SetupButtonMapping();
+        }
+
+        private bool IsHandednessCorrect(InteractionSourceHandedness handedness)
+        {
+            if((IsLeftHand && handedness == InteractionSourceHandedness.Left) || (!IsLeftHand && handedness == InteractionSourceHandedness.Right))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+#if UNITY_WSA && UNITY_2017_2_OR_NEWER
+        private void InteractionManager_InteractionSourceDetected(InteractionSourceDetectedEventArgs obj)
+        {
+            if (obj.state.source.kind == InteractionSourceKind.Controller && IsHandednessCorrect(obj.state.source.handedness))
+            {
+                StartTrackingController(obj.state.source);
+            }
+        }
+
+        private void InteractionManager_InteractionSourceLost(InteractionSourceLostEventArgs obj)
+        {
+            InteractionSource source = obj.state.source;
+            if (source.kind == InteractionSourceKind.Controller && IsHandednessCorrect(source.handedness) && controllerSourceKey == GenerateKey(source))
+            {
+                Debug.Log("ConnectionLost");
+                ButtonStates[NVRButtons.Touchpad] = 0;
+                ButtonStates[NVRButtons.Stick]= 0;
+                ButtonStates[NVRButtons.Trigger] = 0;
+                ButtonStates[NVRButtons.Grip] = 0;
+                ButtonStates[NVRButtons.System] = 0;
+                ButtonStates[NVRButtons.ApplicationMenu] = 0;
+                ButtonStates[NVRButtons.Y] = 0;
+                ButtonStates[NVRButtons.B] = 0;
+                controllerSourceKey = null;
+            }
+        }
+
+        private string GenerateKey(InteractionSource source)
+        {
+            return source.vendorId + "/" + source.productId + "/" + source.productVersion + "/" + source.handedness;
+        }
+
+        private void StartTrackingController(InteractionSource source)
+        {
+            string key = GenerateKey(source);
+
+            if (source.kind == InteractionSourceKind.Controller && IsHandednessCorrect(source.handedness))
+            {
+                controllerSourceKey = GenerateKey(source);
+            }
+        }
+
+        private void UpdateControllerState()
+        {
+            if(controllerSourceKey == null)
+            {
+                return;
+            }
+            foreach (var sourceState in InteractionManager.GetCurrentReading())
+            {
+                if (sourceState.source.kind == InteractionSourceKind.Controller && IsHandednessCorrect(sourceState.source.handedness) && controllerSourceKey == GenerateKey(sourceState.source))
+                {
+                    ButtonStates[NVRButtons.Trigger] = sourceState.selectPressedAmount;
+
+                    if (sourceState.source.supportsGrasp)
+                    {
+                        ButtonStates[NVRButtons.Grip] = sourceState.grasped?1:0;
+                    }
+
+                    if (sourceState.source.supportsMenu)
+                    {
+                        ButtonStates[NVRButtons.ApplicationMenu] = sourceState.menuPressed ? 1 : 0;
+                    }
+
+                    /*if (sourceState.source.supportsThumbstick)
+                    {
+                        //currentController.AnimateThumbstick(sourceState.thumbstickPressed, sourceState.thumbstickPosition);
+                    }
+
+                    if (sourceState.source.supportsTouchpad)
+                    {
+                        //currentController.AnimateTouchpad(sourceState.touchpadPressed, sourceState.touchpadTouched, sourceState.touchpadPosition);
+                    }*/
+
+                    Vector3 newPosition;
+                    if (sourceState.sourcePose.TryGetPosition(out newPosition, InteractionSourceNode.Grip) && ValidPosition(newPosition))
+                    {
+                        lastTrackedPos = newPosition;
+                    }
+
+                    Quaternion newRotation;
+                    if (sourceState.sourcePose.TryGetRotation(out newRotation, InteractionSourceNode.Grip) && ValidRotation(newRotation))
+                    {
+                        lastTrackedRot = newRotation;
+                    }
+                }
+            }
+        }
+#endif
+
+        private bool ValidRotation(Quaternion newRotation)
+        {
+            return !float.IsNaN(newRotation.x) && !float.IsNaN(newRotation.y) && !float.IsNaN(newRotation.z) && !float.IsNaN(newRotation.w) &&
+                !float.IsInfinity(newRotation.x) && !float.IsInfinity(newRotation.y) && !float.IsInfinity(newRotation.z) && !float.IsInfinity(newRotation.w);
+        }
+
+        private bool ValidPosition(Vector3 newPosition)
+        {
+            return !float.IsNaN(newPosition.x) && !float.IsNaN(newPosition.y) && !float.IsNaN(newPosition.z) &&
+                !float.IsInfinity(newPosition.x) && !float.IsInfinity(newPosition.y) && !float.IsInfinity(newPosition.z);
         }
 
         protected virtual void SetupButtonMapping()
         {
-            ButtonMapping.Add(NVRButtons.Touchpad, IsLeftHand ? "16" : "17");
-            ButtonMapping.Add(NVRButtons.Stick, IsLeftHand ? "8" : "9");
-            ButtonMapping.Add(NVRButtons.Trigger, IsLeftHand ? "14" : "15");
-            ButtonMapping.Add(NVRButtons.Grip, IsLeftHand ? "4" : "5");
-            ButtonMapping.Add(NVRButtons.System, IsLeftHand ?  "6": "7");
-            ButtonMapping.Add(NVRButtons.ApplicationMenu, IsLeftHand ? "6" : "7");
-            ButtonMapping.Add(NVRButtons.Y, IsLeftHand ? "6" : "7");
-            ButtonMapping.Add(NVRButtons.B, IsLeftHand ? "6" : "7");
-        }
-
-        private string GetButtonMap(NVRButtons button)
-        {
-            if (ButtonMapping.ContainsKey(button) == false)
-            {
-                return null;
-            }
-            return ButtonMapping[button];
-        }
-
-        private string GetAxisMap(NVRButtons button)
-        {
-            if (AxisMapping.ContainsKey(button) == false)
-            {
-                return null;
-            }
-            return AxisMapping[button];
+            ButtonStates.Add(NVRButtons.Touchpad, 0);
+            ButtonStates.Add(NVRButtons.Stick, 0);
+            ButtonStates.Add(NVRButtons.Trigger, 0);
+            ButtonStates.Add(NVRButtons.Grip, 0);
+            ButtonStates.Add(NVRButtons.System, 0);
+            ButtonStates.Add(NVRButtons.ApplicationMenu, 0);
+            ButtonStates.Add(NVRButtons.Y, 0);
+            ButtonStates.Add(NVRButtons.B, 0);
         }
 
         public override float GetAxis1D(NVRButtons button)
         {
-            string axisID = GetAxisMap(button);
-            if (axisID != null)
-            {
-                return Input.GetAxis("joystick button " + axisID);
-            }
-            else
-            {
-                return 0;
-            }
+            return ButtonStates[button];
         }
 
         public override bool GetPressDown(NVRButtons button)
         {
-            return Input.GetKeyDown("joystick button " + GetButtonMap(button));
+            return ButtonStates[button] > sensitivity ? true : false;
         }
 
         public override bool GetPressUp(NVRButtons button)
         {
-            return Input.GetKeyUp("joystick button " + GetButtonMap(button));
+            return ButtonStates[button] < sensitivity ? true : false;
         }
 
         public override bool GetPress(NVRButtons button)
         {
-            return Input.GetKey("joystick button " + GetButtonMap(button));
+            return ButtonStates[button] > sensitivity ? true : false;
         }
 
         public override bool GetTouchDown(NVRButtons button)
@@ -241,15 +346,16 @@ namespace NewtonVR
 
         private void Update()
         {
-            this.transform.localPosition = InputTracking.GetLocalPosition(IsLeftHand?XRNode.LeftHand: XRNode.RightHand);
-            this.transform.localRotation = InputTracking.GetLocalRotation(IsLeftHand ? XRNode.LeftHand : XRNode.RightHand);
+            UpdateControllerState();
+            this.transform.localPosition = lastTrackedPos;
+            this.transform.localRotation = lastTrackedRot;
         }
     }
 }
 #else
 namespace NewtonVR
 {
-    public class NVROculusInputDevice : NVRInputDevice
+    public class NVRWindowsMixedRealityInputDevice : NVRInputDevice
     {
         public override bool IsCurrentlyTracked
         {
