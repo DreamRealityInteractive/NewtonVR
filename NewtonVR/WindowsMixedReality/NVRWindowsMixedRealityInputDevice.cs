@@ -6,12 +6,26 @@ using System.Text;
 using UnityEngine.XR;
 using UnityEngine.XR.WSA.Input;
 using UnityEngine;
+using HoloToolkit.Unity;
 
 #if NVR_WMR
 namespace NewtonVR
 {
+    
     public class NVRWindowsMixedRealityInputDevice : NVRInputDevice
     {
+        private struct ButtonState
+        {
+            public float previousState;
+            public float currentState;
+
+            public ButtonState(float previous, float current)
+            {
+                previousState = previous;
+                currentState = current;
+            }
+        }
+
         private GameObject RenderModel;
 
         private string controllerSourceKey;
@@ -20,7 +34,7 @@ namespace NewtonVR
 
         private bool IsLeftHand;
 
-        private Dictionary<NVRButtons, float> ButtonStates = new Dictionary<NVRButtons, float>();
+        private Dictionary<NVRButtons, ButtonState> ButtonStates = new Dictionary<NVRButtons, ButtonState>();
 
         private Vector3 lastTrackedPos;
 
@@ -85,14 +99,14 @@ namespace NewtonVR
             if (source.kind == InteractionSourceKind.Controller && IsHandednessCorrect(source.handedness) && controllerSourceKey == GenerateKey(source))
             {
                 Debug.Log("ConnectionLost");
-                ButtonStates[NVRButtons.Touchpad] = 0;
-                ButtonStates[NVRButtons.Stick]= 0;
-                ButtonStates[NVRButtons.Trigger] = 0;
-                ButtonStates[NVRButtons.Grip] = 0;
-                ButtonStates[NVRButtons.System] = 0;
-                ButtonStates[NVRButtons.ApplicationMenu] = 0;
-                ButtonStates[NVRButtons.Y] = 0;
-                ButtonStates[NVRButtons.B] = 0;
+                ButtonStates[NVRButtons.Touchpad] = new ButtonState ( 0, 0 );
+                ButtonStates[NVRButtons.Stick]= new ButtonState(0, 0);
+                ButtonStates[NVRButtons.Trigger] = new ButtonState(0, 0);
+                ButtonStates[NVRButtons.Grip] = new ButtonState(0, 0);
+                ButtonStates[NVRButtons.System] = new ButtonState(0, 0);
+                ButtonStates[NVRButtons.ApplicationMenu] = new ButtonState(0, 0);
+                ButtonStates[NVRButtons.Y] = new ButtonState(0, 0);
+                ButtonStates[NVRButtons.B] = new ButtonState(0, 0);
                 controllerSourceKey = null;
             }
         }
@@ -112,6 +126,14 @@ namespace NewtonVR
             }
         }
 
+        private void UpdateButtonState(NVRButtons button, float value)
+        {
+            ButtonState buttonState = ButtonStates[button];
+            buttonState.previousState = ButtonStates[button].currentState;
+            buttonState.currentState = value;
+            ButtonStates[button] = buttonState;
+        }
+
         private void UpdateControllerState()
         {
             if(controllerSourceKey == null)
@@ -122,27 +144,17 @@ namespace NewtonVR
             {
                 if (sourceState.source.kind == InteractionSourceKind.Controller && IsHandednessCorrect(sourceState.source.handedness) && controllerSourceKey == GenerateKey(sourceState.source))
                 {
-                    ButtonStates[NVRButtons.Trigger] = sourceState.selectPressedAmount;
+                    UpdateButtonState(NVRButtons.Trigger, sourceState.selectPressedAmount);
 
                     if (sourceState.source.supportsGrasp)
                     {
-                        ButtonStates[NVRButtons.Grip] = sourceState.grasped?1:0;
+                        UpdateButtonState(NVRButtons.Grip, sourceState.grasped ? 1 : 0);
                     }
 
                     if (sourceState.source.supportsMenu)
                     {
-                        ButtonStates[NVRButtons.ApplicationMenu] = sourceState.menuPressed ? 1 : 0;
+                        UpdateButtonState(NVRButtons.ApplicationMenu, sourceState.menuPressed ? 1 : 0);
                     }
-
-                    /*if (sourceState.source.supportsThumbstick)
-                    {
-                        //currentController.AnimateThumbstick(sourceState.thumbstickPressed, sourceState.thumbstickPosition);
-                    }
-
-                    if (sourceState.source.supportsTouchpad)
-                    {
-                        //currentController.AnimateTouchpad(sourceState.touchpadPressed, sourceState.touchpadTouched, sourceState.touchpadPosition);
-                    }*/
 
                     Vector3 newPosition;
                     if (sourceState.sourcePose.TryGetPosition(out newPosition, InteractionSourceNode.Grip) && ValidPosition(newPosition))
@@ -174,34 +186,34 @@ namespace NewtonVR
 
         protected virtual void SetupButtonMapping()
         {
-            ButtonStates.Add(NVRButtons.Touchpad, 0);
-            ButtonStates.Add(NVRButtons.Stick, 0);
-            ButtonStates.Add(NVRButtons.Trigger, 0);
-            ButtonStates.Add(NVRButtons.Grip, 0);
-            ButtonStates.Add(NVRButtons.System, 0);
-            ButtonStates.Add(NVRButtons.ApplicationMenu, 0);
-            ButtonStates.Add(NVRButtons.Y, 0);
-            ButtonStates.Add(NVRButtons.B, 0);
+            ButtonStates.Add(NVRButtons.Touchpad, new ButtonState(0, 0));
+            ButtonStates.Add(NVRButtons.Stick, new ButtonState(0, 0));
+            ButtonStates.Add(NVRButtons.Trigger, new ButtonState(0, 0));
+            ButtonStates.Add(NVRButtons.Grip, new ButtonState(0, 0));
+            ButtonStates.Add(NVRButtons.System, new ButtonState(0, 0));
+            ButtonStates.Add(NVRButtons.ApplicationMenu, new ButtonState(0, 0));
+            ButtonStates.Add(NVRButtons.Y, new ButtonState(0, 0));
+            ButtonStates.Add(NVRButtons.B, new ButtonState(0, 0));
         }
 
         public override float GetAxis1D(NVRButtons button)
         {
-            return ButtonStates[button];
+            return ButtonStates[button].currentState;
         }
 
         public override bool GetPressDown(NVRButtons button)
         {
-            return ButtonStates[button] > sensitivity ? true : false;
+            return ButtonStates[button].currentState > sensitivity && ButtonStates[button].previousState <= sensitivity;
         }
 
         public override bool GetPressUp(NVRButtons button)
         {
-            return ButtonStates[button] < sensitivity ? true : false;
+            return ButtonStates[button].currentState < sensitivity && ButtonStates[button].previousState >= sensitivity;
         }
 
         public override bool GetPress(NVRButtons button)
         {
-            return ButtonStates[button] > sensitivity ? true : false;
+            return ButtonStates[button].currentState > sensitivity ? true : false;
         }
 
         public override bool GetTouchDown(NVRButtons button)
@@ -236,8 +248,27 @@ namespace NewtonVR
 
         public override void TriggerHapticPulse(ushort durationMicroSec = 500, NVRButtons button = NVRButtons.Touchpad)
         {
-            //StartCoroutine(DoHapticPulse(durationMicroSec));
+            foreach (var sourceState in InteractionManager.GetCurrentReading())
+            {
+                if (sourceState.source.kind == InteractionSourceKind.Controller && IsHandednessCorrect(sourceState.source.handedness) && controllerSourceKey == GenerateKey(sourceState.source))
+                {
+                    StartCoroutine(DoHapticPulse(sourceState.source, durationMicroSec));
+                    
+                }
+            }
         }
+
+        private IEnumerator DoHapticPulse(InteractionSource interactionSource, ushort durationMicroSec)
+        {
+            interactionSource.StartHaptics(0.2f);
+            float endTime = Time.time + ((float)durationMicroSec / 1000000);
+            do
+            {
+                yield return null;
+            } while (Time.time < endTime);
+            interactionSource.StopHaptics();
+        }
+
 
         public override bool IsCurrentlyTracked
         {
@@ -341,7 +372,7 @@ namespace NewtonVR
 
         public override Vector2 GetAxis2D(NVRButtons button)
         {
-            throw new NotImplementedException();
+            return Vector2.zero;
         }
 
         private void Update()
