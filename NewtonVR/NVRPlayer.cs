@@ -289,9 +289,9 @@ namespace NewtonVR
             NVRSDKIntegrations currentIntegration = NVRSDKIntegrations.None;
             string resultLog = "[NewtonVR] Version : " + NewtonVRVersion + ". ";
 
-            if (UnityEngine.XR.XRDevice.isPresent == true)
+            if (VRDevice.isPresent == true)
             {
-                resultLog += "Found VRDevice: " + UnityEngine.XR.XRDevice.model + ". ";
+                resultLog += "Found VRDevice: " + VRDevice.model + ". ";
 
 #if !NVR_Oculus && !NVR_SteamVR && !NVR_Gear && !NVR_Daydream && !NVR_WMR
                 string warning = "Neither SteamVR or Oculus SDK or Daydream SDK is enabled in the NVRPlayer. Please check the \"Enable SteamVR\" or \"Enable Oculus SDK\" checkbox in the NVRPlayer script in the NVRPlayer GameObject.";
@@ -299,7 +299,7 @@ namespace NewtonVR
 #endif
 
 #if NVR_Oculus
-                if (UnityEngine.XR.XRDevice.model.IndexOf("oculus", System.StringComparison.CurrentCultureIgnoreCase) != -1)
+                if (VRDevice.model.IndexOf("oculus", System.StringComparison.CurrentCultureIgnoreCase) != -1)
                 {
                     currentIntegration = NVRSDKIntegrations.Oculus;
                     resultLog += "Using Oculus SDK";
