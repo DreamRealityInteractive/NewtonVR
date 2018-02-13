@@ -31,6 +31,7 @@ namespace NewtonVR
         private const string OculusDefine = "NVR_Oculus";
 		private const string DaydreamDefine = "NVR_Daydream";
 		private const string GearDefine = "NVR_Gear";
+        private const string WMRDefine = "NVR_WMR";
 
         private static bool hasReloaded = false;
         private static bool waitingForReload = false;
@@ -39,7 +40,9 @@ namespace NewtonVR
         private static bool hasOculusSDK = false;
         private static bool hasSteamVR = false;
 		private static bool hasDaydreamSDK = false;
+        private static bool hasWMRSDK = false;
         private static bool hasOculusSDKDefine = false;
+        private static bool hasWMRSDKDefine = false;
         private static bool hasSteamVRDefine = false;
 		private static bool hasDaydreamVRDefine = false;
 		private static bool hasGearVRDefine = false;
@@ -53,18 +56,21 @@ namespace NewtonVR
         {
             hasReloaded = true;
 
+            hasWMRSDK = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WSAPlayer;
+
             hasOculusSDK = DoesTypeExist("OVRInput");
 
             hasSteamVR = DoesTypeExist("SteamVR");
 
 			hasDaydreamSDK = DoesTypeExist("GvrController");
 
-            string scriptingDefine = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone);
+            string scriptingDefine = (hasWMRSDK) ? PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.WSA): PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone);
             string[] scriptingDefines = scriptingDefine.Split(';');
             hasOculusSDKDefine = scriptingDefines.Contains(OculusDefine);
 			hasDaydreamVRDefine = scriptingDefines.Contains(DaydreamDefine);
 			hasGearVRDefine = scriptingDefine.Contains(GearDefine);
             hasSteamVRDefine = scriptingDefines.Contains(SteamVRDefine);
+            hasWMRSDKDefine = scriptingDefines.Contains(WMRDefine);
 
             waitingForReload = false;
             ClearProgressBar();
@@ -109,34 +115,34 @@ namespace NewtonVR
             return foundType != null;
         }
 
-        private void RemoveDefine(string define)
+        private void RemoveDefine(string define, BuildTargetGroup group = BuildTargetGroup.Standalone)
         {
             DisplayProgressBar("Removing support for " + define);
             waitingForReload = true;
             startedWaitingForReload = DateTime.Now;
 
-            string scriptingDefine = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone);
+            string scriptingDefine = PlayerSettings.GetScriptingDefineSymbolsForGroup(group);
             string[] scriptingDefines = scriptingDefine.Split(';');
             List<string> listDefines = scriptingDefines.ToList();
             listDefines.Remove(define);
 
             string newDefines = string.Join(";", listDefines.ToArray());
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, newDefines);
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(group, newDefines);
         }
 
-        private void AddDefine(string define)
+        private void AddDefine(string define, BuildTargetGroup group = BuildTargetGroup.Standalone)
         {
             DisplayProgressBar("Setting up support for " + define);
             waitingForReload = true;
             startedWaitingForReload = DateTime.Now;
 
-            string scriptingDefine = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone);
+            string scriptingDefine = PlayerSettings.GetScriptingDefineSymbolsForGroup(group);
             string[] scriptingDefines = scriptingDefine.Split(';');
             List<string> listDefines = scriptingDefines.ToList();
             listDefines.Add(define);
 
             string newDefines = string.Join(";", listDefines.ToArray());
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, newDefines);
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(group, newDefines);
 
             if (PlayerSettings.virtualRealitySupported == false)
             {
@@ -191,14 +197,16 @@ namespace NewtonVR
 			player.OculusSDKEnabled = hasOculusSDKDefine || hasGearVRDefine;
             player.SteamVREnabled = hasSteamVRDefine;
 			player.DaydreamSDKEnabled = hasDaydreamVRDefine;
+            player.WMRSDKEnabled = hasWMRSDK;
 
             bool installSteamVR = false;
             bool installOculusSDK = false;
-			bool installDaydreamSDK = false;
+            bool installDaydreamSDK = false;
             bool enableSteamVR = player.SteamVREnabled;
             bool enableOculusSDK = player.OculusSDKEnabled;
 			bool enableDaydreamSDK = player.DaydreamSDKEnabled;
-            
+            bool enableWMRSDK = player.WMRSDKEnabled;
+
             EditorGUILayout.BeginHorizontal();
             if (hasSteamVR == false)
             {
@@ -229,7 +237,14 @@ namespace NewtonVR
             }
             EditorGUILayout.EndHorizontal();
 
-			EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            if (hasWMRSDK == true)
+            {
+                enableWMRSDK = EditorGUILayout.Toggle("Enable WMR SDK", player.WMRSDKEnabled);
+            }
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
 			if (hasDaydreamSDK == false)
 			{
 				using (new EditorGUI.DisabledScope(hasDaydreamSDK == false))
@@ -311,6 +326,41 @@ namespace NewtonVR
                 }
             }
 
+            if (player.WMRSDKEnabled == true)
+            {
+                GUILayout.Label("Model override for WMR SDK");
+                using (new EditorGUI.DisabledScope(hasWMRSDK == false))
+                {
+                    bool modelOverrideWMR = EditorGUILayout.Toggle("Override hand models for WMR SDK", player.OverrideWMR);
+                    EditorGUILayout.BeginFadeGroup(Convert.ToSingle(modelOverrideWMR));
+                    using (new EditorGUI.DisabledScope(modelOverrideWMR == false))
+                    {
+                        player.OverrideWMRLeftHand = (GameObject)EditorGUILayout.ObjectField("Left Hand", player.OverrideWMRLeftHand, typeof(GameObject), false);
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Space(20);
+                        player.OverrideWMRLeftHandPhysicalColliders = (GameObject)EditorGUILayout.ObjectField("Left Hand Physical Colliders", player.OverrideWMRLeftHandPhysicalColliders, typeof(GameObject), false);
+                        GUILayout.EndHorizontal();
+                        player.OverrideWMRRightHand = (GameObject)EditorGUILayout.ObjectField("Right Hand", player.OverrideWMRRightHand, typeof(GameObject), false);
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Space(20);
+                        player.OverrideWMRRightHandPhysicalColliders = (GameObject)EditorGUILayout.ObjectField("Right Hand Physical Colliders", player.OverrideWMRRightHandPhysicalColliders, typeof(GameObject), false);
+                        GUILayout.EndHorizontal();
+                    }
+                    EditorGUILayout.EndFadeGroup();
+
+                    if (modelOverrideWMR == true)
+                    {
+                        player.OverrideAll = false;
+                    }
+                    if (player.OverrideWMR != modelOverrideWMR)
+                    {
+                        EditorUtility.SetDirty(target);
+                        player.OverrideWMR = modelOverrideWMR;
+                    }
+                }
+            }
+
+
             if (player.SteamVREnabled == true)
             {
                 GUILayout.Label("Model override for SteamVR");
@@ -372,7 +422,16 @@ namespace NewtonVR
                 AddDefine(OculusDefine);
             }
 
-			if (enableDaydreamSDK == false && player.DaydreamSDKEnabled == true)
+            if (enableWMRSDK == false && player.WMRSDKEnabled== true)
+            {
+                RemoveDefine(WMRDefine, BuildTargetGroup.WSA);
+            }
+            else if (enableWMRSDK == true && player.WMRSDKEnabled == false)
+            {
+                AddDefine(WMRDefine, BuildTargetGroup.WSA);
+            }
+
+            if (enableDaydreamSDK == false && player.DaydreamSDKEnabled == true)
 			{
 				RemoveDefine(DaydreamDefine);
 			}

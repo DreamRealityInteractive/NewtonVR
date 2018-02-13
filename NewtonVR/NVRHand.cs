@@ -310,13 +310,13 @@ namespace NewtonVR
 
                 if (IsLeft)
                 {
-                    CustomModel = Player.OverrideOculusLeftHand;
-                    CustomPhysicalColliders = Player.OverrideOculusLeftHandPhysicalColliders;
+                    CustomModel = Player.OverrideWMRLeftHand;
+                    CustomPhysicalColliders = Player.OverrideWMRLeftHandPhysicalColliders;
                 }
                 else if (IsRight)
                 {
-                    CustomModel = Player.OverrideOculusRightHand;
-                    CustomPhysicalColliders = Player.OverrideOculusRightHandPhysicalColliders;
+                    CustomModel = Player.OverrideWMRRightHand;
+                    CustomPhysicalColliders = Player.OverrideWMRRightHandPhysicalColliders;
                 }
                 else
                 {

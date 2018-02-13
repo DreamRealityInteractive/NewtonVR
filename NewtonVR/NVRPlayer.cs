@@ -38,7 +38,9 @@ namespace NewtonVR
         public bool SteamVREnabled = false;
         [HideInInspector]
         public bool OculusSDKEnabled = false;
-		[HideInInspector]
+        [HideInInspector]
+        public bool WMRSDKEnabled = false;
+        [HideInInspector]
 		public bool DaydreamSDKEnabled = false;
 
         public InterationStyle InteractionStyle;
@@ -140,6 +142,17 @@ namespace NewtonVR
         public GameObject OverrideOculusRightHand;
         [HideInInspector]
         public GameObject OverrideOculusRightHandPhysicalColliders;
+
+        [HideInInspector]
+        public bool OverrideWMR;
+        [HideInInspector]
+        public GameObject OverrideWMRLeftHand;
+        [HideInInspector]
+        public GameObject OverrideWMRLeftHandPhysicalColliders;
+        [HideInInspector]
+        public GameObject OverrideWMRRightHand;
+        [HideInInspector]
+        public GameObject OverrideWMRRightHandPhysicalColliders;
 
         [Space]
 
