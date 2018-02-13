@@ -135,8 +135,11 @@ namespace NewtonVR
                 this.Rigidbody.angularVelocity = angularTarget;
             }
 
-            Vector3 velocityTarget = positionDelta / Time.deltaTime;
-            this.Rigidbody.velocity = velocityTarget;
+            if(positionDelta != Vector3.zero)
+            {
+                Vector3 velocityTarget = positionDelta / Time.deltaTime;
+                this.Rigidbody.velocity = velocityTarget;
+            }
         }
 
         protected virtual void FixedUpdate()

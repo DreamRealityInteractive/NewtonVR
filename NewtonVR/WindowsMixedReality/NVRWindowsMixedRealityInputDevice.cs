@@ -36,9 +36,11 @@ namespace NewtonVR
 
         private Dictionary<NVRButtons, ButtonState> ButtonStates = new Dictionary<NVRButtons, ButtonState>();
 
-        private Vector3 lastTrackedPos;
+        private Vector3 lastTrackedPos = Vector3.zero;
 
-        private Quaternion lastTrackedRot;
+        private Quaternion lastTrackedRot = Quaternion.identity;
+
+        private bool modelInitialised;
 
         private const float sensitivity = 0.1f;
 
@@ -98,16 +100,7 @@ namespace NewtonVR
             InteractionSource source = obj.state.source;
             if (source.kind == InteractionSourceKind.Controller && IsHandednessCorrect(source.handedness) && controllerSourceKey == GenerateKey(source))
             {
-                Debug.Log("ConnectionLost");
-                ButtonStates[NVRButtons.Touchpad] = new ButtonState ( 0, 0 );
-                ButtonStates[NVRButtons.Stick]= new ButtonState(0, 0);
-                ButtonStates[NVRButtons.Trigger] = new ButtonState(0, 0);
-                ButtonStates[NVRButtons.Grip] = new ButtonState(0, 0);
-                ButtonStates[NVRButtons.System] = new ButtonState(0, 0);
-                ButtonStates[NVRButtons.ApplicationMenu] = new ButtonState(0, 0);
-                ButtonStates[NVRButtons.Y] = new ButtonState(0, 0);
-                ButtonStates[NVRButtons.B] = new ButtonState(0, 0);
-                controllerSourceKey = null;
+                StopTrackingController();
             }
         }
 
@@ -122,8 +115,23 @@ namespace NewtonVR
 
             if (source.kind == InteractionSourceKind.Controller && IsHandednessCorrect(source.handedness))
             {
+                Debug.Log("Start Tracking : " + GenerateKey(source));
                 controllerSourceKey = GenerateKey(source);
             }
+        }
+
+        private void StopTrackingController()
+        {
+            Debug.Log("ConnectionLost");
+            ButtonStates[NVRButtons.Touchpad] = new ButtonState(0, 0);
+            ButtonStates[NVRButtons.Stick] = new ButtonState(0, 0);
+            ButtonStates[NVRButtons.Trigger] = new ButtonState(0, 0);
+            ButtonStates[NVRButtons.Grip] = new ButtonState(0, 0);
+            ButtonStates[NVRButtons.System] = new ButtonState(0, 0);
+            ButtonStates[NVRButtons.ApplicationMenu] = new ButtonState(0, 0);
+            ButtonStates[NVRButtons.Y] = new ButtonState(0, 0);
+            ButtonStates[NVRButtons.B] = new ButtonState(0, 0);
+            controllerSourceKey = null;
         }
 
         private void UpdateButtonState(NVRButtons button, float value)
@@ -136,14 +144,32 @@ namespace NewtonVR
 
         private void UpdateControllerState()
         {
-            if(controllerSourceKey == null)
+            InteractionSourceState[] currentReading = InteractionManager.GetCurrentReading();
+            if (controllerSourceKey == null)
             {
-                return;
+                // Look for controller
+                foreach (var sourceState in currentReading)
+                {
+                    if (sourceState.source.kind == InteractionSourceKind.Controller && IsHandednessCorrect(sourceState.source.handedness))
+                    {
+                        StartTrackingController(sourceState.source);
+                    }
+                }
+
+                if(controllerSourceKey == null)
+                {
+                    Hand.Model.SetActive(false);
+                    return;
+                }
+                
             }
-            foreach (var sourceState in InteractionManager.GetCurrentReading())
+
+            bool controllerStateFound = false;
+            foreach (var sourceState in currentReading)
             {
                 if (sourceState.source.kind == InteractionSourceKind.Controller && IsHandednessCorrect(sourceState.source.handedness) && controllerSourceKey == GenerateKey(sourceState.source))
                 {
+                    controllerStateFound = true;
                     UpdateButtonState(NVRButtons.Trigger, sourceState.selectPressedAmount);
 
                     if (sourceState.source.supportsGrasp)
@@ -156,18 +182,28 @@ namespace NewtonVR
                         UpdateButtonState(NVRButtons.ApplicationMenu, sourceState.menuPressed ? 1 : 0);
                     }
 
-                    Vector3 newPosition;
+                    Vector3 newPosition = Vector3.zero;
                     if (sourceState.sourcePose.TryGetPosition(out newPosition, InteractionSourceNode.Grip) && ValidPosition(newPosition))
                     {
-                        lastTrackedPos = newPosition;
+                        lastTrackedPos = new Vector3(newPosition.x, newPosition.y, newPosition.z);
                     }
 
-                    Quaternion newRotation;
+                    Quaternion newRotation = Quaternion.identity;
                     if (sourceState.sourcePose.TryGetRotation(out newRotation, InteractionSourceNode.Grip) && ValidRotation(newRotation))
                     {
                         lastTrackedRot = newRotation;
                     }
                 }
+            }
+            
+            if (!controllerStateFound)
+            {
+                StopTrackingController();
+                Hand.Model.SetActive(false);
+            }
+            else if(!Hand.Model.activeSelf)
+            {
+                Hand.Model.SetActive(true);
             }
         }
 #endif
@@ -260,7 +296,7 @@ namespace NewtonVR
 
         private IEnumerator DoHapticPulse(InteractionSource interactionSource, ushort durationMicroSec)
         {
-            interactionSource.StartHaptics(0.2f);
+            interactionSource.StartHaptics(0.5f);
             float endTime = Time.time + ((float)durationMicroSec / 1000000);
             do
             {
@@ -331,7 +367,7 @@ namespace NewtonVR
         {
             Collider[] Colliders = null;
 
-            string name = "oculusTouch";
+            string name = "wmrTouch";
             if (Hand.IsLeft == true)
             {
                 name += "Left";
@@ -378,8 +414,22 @@ namespace NewtonVR
         private void Update()
         {
             UpdateControllerState();
-            this.transform.localPosition = lastTrackedPos;
-            this.transform.localRotation = lastTrackedRot;
+            if (!modelInitialised && this.GetComponent<Rigidbody>())
+            {
+                modelInitialised = true;
+            }
+            if (!string.IsNullOrEmpty(controllerSourceKey) && modelInitialised)
+            {
+                if (ValidPosition(lastTrackedPos))
+                {
+                    this.transform.localPosition = lastTrackedPos;
+                }
+
+                if (ValidRotation(lastTrackedRot))
+                {
+                    this.transform.localRotation = lastTrackedRot;
+                }
+            }
         }
     }
 }

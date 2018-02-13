@@ -141,6 +141,11 @@ namespace NewtonVR
             set { InputDevice = value; }
 		}
 
+        public GameObject Model
+        {
+            get { return RenderModel; }
+        }
+
         public bool IsHovering
         {
             get
