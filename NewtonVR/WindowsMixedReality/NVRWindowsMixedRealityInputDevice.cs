@@ -44,6 +44,8 @@ namespace NewtonVR
 
         private const float sensitivity = 0.1f;
 
+        private bool hapticsActive = false;
+
         public override void Initialize(NVRHand hand)
         {
             base.Initialize(hand);
@@ -131,6 +133,7 @@ namespace NewtonVR
             ButtonStates[NVRButtons.ApplicationMenu] = new ButtonState(0, 0);
             ButtonStates[NVRButtons.Y] = new ButtonState(0, 0);
             ButtonStates[NVRButtons.B] = new ButtonState(0, 0);
+            hapticsActive = false;
             controllerSourceKey = null;
         }
 
@@ -284,25 +287,35 @@ namespace NewtonVR
 
         public override void TriggerHapticPulse(ushort durationMicroSec = 500, NVRButtons button = NVRButtons.Touchpad)
         {
+            if (hapticsActive)
+            {
+                return;
+            }
             foreach (var sourceState in InteractionManager.GetCurrentReading())
             {
                 if (sourceState.source.kind == InteractionSourceKind.Controller && IsHandednessCorrect(sourceState.source.handedness) && controllerSourceKey == GenerateKey(sourceState.source))
                 {
-                    StartCoroutine(DoHapticPulse(sourceState.source, durationMicroSec));
-                    
+                    float timeInSec = ((float)durationMicroSec / 1000000);
+                    if(timeInSec < 0.1f)
+                    {
+                        // very short durations don't respnd well with WMR
+                        timeInSec = 0.1f;
+                    }
+                    StartCoroutine(DoHapticPulse(timeInSec, sourceState.source));
                 }
             }
         }
 
-        private IEnumerator DoHapticPulse(InteractionSource interactionSource, ushort durationMicroSec)
+        private IEnumerator DoHapticPulse(float timeInSeconds, InteractionSource source)
         {
-            interactionSource.StartHaptics(0.5f);
-            float endTime = Time.time + ((float)durationMicroSec / 1000000);
-            do
+            if (!hapticsActive)
             {
-                yield return null;
-            } while (Time.time < endTime);
-            interactionSource.StopHaptics();
+                hapticsActive = true;
+                source.StartHaptics(1f, timeInSeconds);
+                yield return new WaitForSeconds(timeInSeconds);
+                source.StopHaptics();
+                hapticsActive = false;
+            }
         }
 
 
