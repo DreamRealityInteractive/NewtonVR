@@ -12,11 +12,20 @@ namespace NewtonVR
         public override void Initialize(NVRPlayer player)
         {
             Player = player;
-            Camera cam = player.Head.GetComponent<Camera>();
-            cam.cullingMask = -1;
-            cam.farClipPlane = 160f;
-            cam.nearClipPlane = 0.01f;
-            cam.tag = "MainCamera";
+            Camera leftCam = player.Head.GetComponent<Camera>();
+
+            leftCam.cullingMask = -1;
+            leftCam.farClipPlane = 160f;
+            leftCam.nearClipPlane = 0.01f;
+            leftCam.stereoTargetEye = StereoTargetEyeMask.Left;
+            
+            GameObject rightGo = new GameObject("StereoR");
+            Camera rightCam = rightGo.AddComponent<Camera>();
+            rightCam.cullingMask = -1;
+            rightCam.farClipPlane = 160f;
+            rightCam.nearClipPlane = 0.01f;
+            rightCam.stereoTargetEye = StereoTargetEyeMask.Right;
+            rightGo.transform.parent = player.Head.transform.parent;
         }
 
         private Vector3 PlayspaceBounds = Vector3.zero;

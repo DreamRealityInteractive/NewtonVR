@@ -42,7 +42,6 @@ namespace NewtonVR
 		private static bool hasDaydreamSDK = false;
         private static bool hasWMRSDK = false;
         private static bool hasOculusSDKDefine = false;
-        private static bool hasWMRSDKDefine = false;
         private static bool hasSteamVRDefine = false;
 		private static bool hasDaydreamVRDefine = false;
 		private static bool hasGearVRDefine = false;
@@ -70,7 +69,6 @@ namespace NewtonVR
 			hasDaydreamVRDefine = scriptingDefines.Contains(DaydreamDefine);
 			hasGearVRDefine = scriptingDefine.Contains(GearDefine);
             hasSteamVRDefine = scriptingDefines.Contains(SteamVRDefine);
-            hasWMRSDKDefine = scriptingDefines.Contains(WMRDefine);
 
             waitingForReload = false;
             ClearProgressBar();
