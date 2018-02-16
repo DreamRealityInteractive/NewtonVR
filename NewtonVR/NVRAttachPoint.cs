@@ -91,11 +91,11 @@ namespace NewtonVR
         }
         public virtual void Detached(NVRAttachJoint joint)
         {
-#if NVR_Daydream || NVR_Gear
-            Rigidbody.isKinematic = false;
+#if !UNITY_ANDROID
+            Rigidbody.useGravity = true;
 #endif
             IsAttached = false;
-            Rigidbody.useGravity = true;
+            
             AttachedJoint = null;
         }
 
