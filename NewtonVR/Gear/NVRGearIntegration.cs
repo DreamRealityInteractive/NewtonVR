@@ -154,7 +154,20 @@ namespace NewtonVR
                 }
             }
 
+            if (IsOculusGo)
+            {
+                UnityEngine.VR.VRSettings.renderScale = 1.4f;
+            }
+
             //// End Integration for Stereo with NVR //////
+        }
+
+        bool IsOculusGo
+        {
+            get
+            {
+                return SystemInfo.deviceModel == "Oculus Pacific";
+            }
         }
 
         public override Vector3 GetPlayspaceBounds()
