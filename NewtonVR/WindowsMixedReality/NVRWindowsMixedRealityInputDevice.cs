@@ -185,17 +185,10 @@ namespace NewtonVR
                         UpdateButtonState(NVRButtons.ApplicationMenu, sourceState.menuPressed ? 1 : 0);
                     }
 
-                    Vector3 newPosition = Vector3.zero;
-                    if (sourceState.sourcePose.TryGetPosition(out newPosition, InteractionSourceNode.Grip) && ValidPosition(newPosition))
-                    {
-                        lastTrackedPos = new Vector3(newPosition.x, newPosition.y, newPosition.z);
-                    }
+					XRNode node = (IsLeftHand) ? XRNode.LeftHand : XRNode.RightHand;
 
-                    Quaternion newRotation = Quaternion.identity;
-                    if (sourceState.sourcePose.TryGetRotation(out newRotation, InteractionSourceNode.Grip) && ValidRotation(newRotation))
-                    {
-                        lastTrackedRot = newRotation;
-                    }
+					lastTrackedPos = InputTracking.GetLocalPosition (node);
+					lastTrackedRot = InputTracking.GetLocalRotation (node);
                 }
             }
             
@@ -210,18 +203,6 @@ namespace NewtonVR
             }
         }
 #endif
-
-        private bool ValidRotation(Quaternion newRotation)
-        {
-            return !float.IsNaN(newRotation.x) && !float.IsNaN(newRotation.y) && !float.IsNaN(newRotation.z) && !float.IsNaN(newRotation.w) &&
-                !float.IsInfinity(newRotation.x) && !float.IsInfinity(newRotation.y) && !float.IsInfinity(newRotation.z) && !float.IsInfinity(newRotation.w);
-        }
-
-        private bool ValidPosition(Vector3 newPosition)
-        {
-            return !float.IsNaN(newPosition.x) && !float.IsNaN(newPosition.y) && !float.IsNaN(newPosition.z) &&
-                !float.IsInfinity(newPosition.x) && !float.IsInfinity(newPosition.y) && !float.IsInfinity(newPosition.z);
-        }
 
         protected virtual void SetupButtonMapping()
         {
@@ -433,15 +414,8 @@ namespace NewtonVR
             }
             if (!string.IsNullOrEmpty(controllerSourceKey) && modelInitialised)
             {
-                if (ValidPosition(lastTrackedPos))
-                {
-                    this.transform.localPosition = lastTrackedPos;
-                }
-
-                if (ValidRotation(lastTrackedRot))
-                {
-                    this.transform.localRotation = lastTrackedRot;
-                }
+                this.transform.localPosition = lastTrackedPos;
+                this.transform.localRotation = lastTrackedRot;
             }
         }
     }
