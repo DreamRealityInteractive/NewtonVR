@@ -204,6 +204,18 @@ namespace NewtonVR
         }
 #endif
 
+        private bool ValidRotation(Quaternion newRotation)
+        {
+            return !float.IsNaN(newRotation.x) && !float.IsNaN(newRotation.y) && !float.IsNaN(newRotation.z) && !float.IsNaN(newRotation.w) &&
+                !float.IsInfinity(newRotation.x) && !float.IsInfinity(newRotation.y) && !float.IsInfinity(newRotation.z) && !float.IsInfinity(newRotation.w);
+        }
+
+        private bool ValidPosition(Vector3 newPosition)
+        {
+            return !float.IsNaN(newPosition.x) && !float.IsNaN(newPosition.y) && !float.IsNaN(newPosition.z) &&
+                !float.IsInfinity(newPosition.x) && !float.IsInfinity(newPosition.y) && !float.IsInfinity(newPosition.z);
+        }
+
         protected virtual void SetupButtonMapping()
         {
             ButtonStates.Add(NVRButtons.Touchpad, new ButtonState(0, 0));
@@ -412,10 +424,17 @@ namespace NewtonVR
             {
                 modelInitialised = true;
             }
-            if (!string.IsNullOrEmpty(controllerSourceKey) && modelInitialised)
+            if (!string.IsNullOrEmpty(controllerSourceKey) && modelInitialised)  
             {
-                this.transform.localPosition = lastTrackedPos;
-                this.transform.localRotation = lastTrackedRot;
+                if (ValidPosition(lastTrackedPos))
+                {
+                    this.transform.localPosition = lastTrackedPos;
+                }
+
+                if (ValidRotation(lastTrackedRot))
+                {
+                    this.transform.localRotation = lastTrackedRot;
+                }
             }
         }
     }
