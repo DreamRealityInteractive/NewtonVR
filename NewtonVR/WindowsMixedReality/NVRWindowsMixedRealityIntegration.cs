@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
+using HoloToolkit.Unity;
 
 #if NVR_WMR
 namespace NewtonVR
@@ -18,7 +19,12 @@ namespace NewtonVR
             leftCam.farClipPlane = 160f;
             leftCam.nearClipPlane = 0.01f;
             leftCam.stereoTargetEye = StereoTargetEyeMask.Left;
-            
+
+            leftCam.gameObject.AddComponent<GpuTimingCamera>();
+
+            HoloToolkit.Unity.AdaptiveQuality qualityController = player.gameObject.AddComponent<HoloToolkit.Unity.AdaptiveQuality>();
+            HoloToolkit.Unity.AdaptiveViewport viewport = player.gameObject.AddComponent<HoloToolkit.Unity.AdaptiveViewport>();
+
             GameObject rightGo = new GameObject("StereoR");
             Camera rightCam = rightGo.AddComponent<Camera>();
             rightCam.cullingMask = -1;
@@ -26,6 +32,7 @@ namespace NewtonVR
             rightCam.nearClipPlane = 0.01f;
             rightCam.stereoTargetEye = StereoTargetEyeMask.Right;
             rightGo.transform.parent = player.Head.transform.parent;
+            rightCam.gameObject.AddComponent<GpuTimingCamera>();
         }
 
         private Vector3 PlayspaceBounds = Vector3.zero;
