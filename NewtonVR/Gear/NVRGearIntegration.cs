@@ -51,6 +51,12 @@ namespace NewtonVR
             }
         }
 
+        private static bool isOculusGo;
+        private static bool IsOculusGo
+        {
+            get { return isOculusGo; }
+        }
+
 
         public override void Initialize(NVRPlayer player)
         {
@@ -83,6 +89,12 @@ namespace NewtonVR
 {
 	public class NVRGearIntegration : NVRIntegration
     {
+        private static bool isOculusGo;
+        public static bool IsOculusGo
+        {
+            get { return isOculusGo; }
+        }
+
         public override void Initialize(NVRPlayer player)
         {
             //// Start Integration for Stereo with NVR //////
@@ -154,21 +166,17 @@ namespace NewtonVR
                 }
             }
 
-            //if (IsOculusGo)
-            //{
-            //    UnityEngine.VR.VRSettings.renderScale = 1.1f;
-            //}
+            isOculusGo = SystemInfo.deviceModel == "Oculus Pacific";
+
+            Debug.Log("Is Oculus go " + isOculusGo + " Device model " + SystemInfo.deviceModel);
+
+            if (isOculusGo)
+            {
+                UnityEngine.VR.VRSettings.renderScale = 1.2f;
+            }
 
             //// End Integration for Stereo with NVR //////
         }
-
-        /*bool IsOculusGo
-        {
-            get
-            {
-                return SystemInfo.deviceModel == "Oculus Pacific";
-            }
-        }*/
 
         public override Vector3 GetPlayspaceBounds()
         {
