@@ -13,7 +13,7 @@ namespace NewtonVR
     {
         private GameObject RenderModel;
 
-		private GvrController Controller;
+		private GvrControllerInput Controller;
 
         public override void Initialize(NVRHand hand)
         {
@@ -33,7 +33,7 @@ namespace NewtonVR
 
         public override Vector2 GetAxis2D(NVRButtons button)
         {
-				return (button == NVRButtons.Touchpad) ? GvrController.TouchPos : Vector2.zero;
+				return (button == NVRButtons.Touchpad) ? GvrControllerInput.TouchPos : Vector2.zero;
         }
 
         public override bool GetPressDown(NVRButtons button)
@@ -43,11 +43,11 @@ namespace NewtonVR
 			case NVRButtons.ApplicationMenu:
 			case NVRButtons.B:
 			case NVRButtons.Y:
-				return GvrController.AppButtonDown;
+				return GvrControllerInput.AppButtonDown;
 			case NVRButtons.System:
-				return GvrController.HomeButtonDown;
+				return GvrControllerInput.HomeButtonDown;
 			case NVRButtons.Touchpad:
-				return GvrController.ClickButtonDown;
+				return GvrControllerInput.ClickButtonDown;
 			}
 
 			return false; // OVRInput.GetDown(GetButtonMap(button), Controller);
@@ -60,9 +60,9 @@ namespace NewtonVR
 			case NVRButtons.ApplicationMenu:
 			case NVRButtons.B:
 			case NVRButtons.Y:
-				return GvrController.AppButtonUp;
+				return GvrControllerInput.AppButtonUp;
 			case NVRButtons.Touchpad:
-				return GvrController.ClickButtonUp;
+				return GvrControllerInput.ClickButtonUp;
 			}
 				
 			return false; //OVRInput.GetUp(GetButtonMap(button), Controller);
@@ -75,9 +75,9 @@ namespace NewtonVR
 			case NVRButtons.ApplicationMenu:
 			case NVRButtons.B:
 			case NVRButtons.Y:
-				return GvrController.AppButton;
+				return GvrControllerInput.AppButton;
 			case NVRButtons.Touchpad:
-				return GvrController.ClickButton;
+				return GvrControllerInput.ClickButton;
 			}
 				
 			return false; // OVRInput.Get(GetButtonMap(button), Controller);
@@ -88,7 +88,7 @@ namespace NewtonVR
 			switch(button)
 			{
 			case NVRButtons.Touchpad:
-				return GvrController.TouchDown;
+				return GvrControllerInput.TouchDown;
 			}
 
 			return false;
@@ -99,7 +99,7 @@ namespace NewtonVR
 			switch(button)
 			{
 			case NVRButtons.Touchpad:
-				return GvrController.TouchUp;
+				return GvrControllerInput.TouchUp;
 			}
 
 			return false;
@@ -107,7 +107,7 @@ namespace NewtonVR
 
 		public override bool GetTouch(NVRButtons button)
         {
-				return (button == NVRButtons.Touchpad) ? GvrController.IsTouching : false;
+				return (button == NVRButtons.Touchpad) ? GvrControllerInput.IsTouching : false;
         }
 
         public override bool GetNearTouchDown(NVRButtons button)
