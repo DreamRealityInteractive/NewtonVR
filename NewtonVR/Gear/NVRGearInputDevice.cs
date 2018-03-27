@@ -24,6 +24,7 @@ namespace NewtonVR
 
         protected virtual void SetupButtonMapping()
         {
+            ButtonMapping.Add(NVRButtons.Trigger, OVRInput.Button.PrimaryIndexTrigger);
 			ButtonMapping.Add(NVRButtons.Touchpad, OVRInput.Button.One);
             ButtonMapping.Add(NVRButtons.B, OVRInput.Button.Two);
 			ButtonMapping.Add(NVRButtons.Y, OVRInput.Button.Two);
